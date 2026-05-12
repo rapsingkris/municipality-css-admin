@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="/js/supabase_client.js" defer></script>
+<script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
+      <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+    </div>
+    <div class="sidebar-brand">
+      <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+      <p class="sub-title">Client Satisfaction Survey</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-item active">
+        <i class="fas fa-house"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="offices.html" class="nav-item">
+        <i class="fas fa-building"></i>
+        <span>Office</span>
+      </a>
+      <a href="survey_question.html" class="nav-item">
+        <i class="fas fa-list-ul"></i>
+        <span>Survey Question</span>
+      </a>
+      <a href="responses.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Responses</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-right">
+        <button class="icon-btn notif-btn">
+          <i class="far fa-bell"></i>
+          <span class="badge">3</span>
+        </button>
+        <div class="avatar-wrap">
+          <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Body -->
+    <section class="dashboard-body">
+      <h1 class="page-title">Admin Dashboard</h1>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">
+            <i class="far fa-envelope"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-label">Total Responses</p>
+            <p class="stat-value">325</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-pink">
+          <div class="stat-icon">
+            <i class="far fa-star"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-label">Average Satisfaction</p>
+            <p class="stat-value">5/5</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon">
+            <i class="far fa-envelope-open"></i>
+          </div>
+          <div class="stat-info">
+            <p class="stat-label">Weekly Responses</p>
+            <p class="stat-value">20</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Feedback Table -->
+      <div class="table-section">
+        <h2 class="section-title">Recent Feedback</h2>
+        <div class="table-wrapper">
+          <table class="feedback-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Office</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Grace Villanueva</td>
+                <td><span class="office-tag">LYDO</span></td>
+                <td class="date-cell">March 11, 2026 12:30 AM</td>
+              </tr>
+              <tr>
+                <td>Kristine Rapsing</td>
+                <td><span class="office-tag">LYDO</span></td>
+                <td class="date-cell">March 11, 2026 12:29 AM</td>
+              </tr>
+              <tr>
+                <td>Anonymous</td>
+                <td><span class="office-tag">LYDO</span></td>
+                <td class="date-cell">March 11, 2026 12:29 AM</td>
+              </tr>
+              <tr>
+                <td>Anonymous</td>
+                <td><span class="office-tag">LYDO</span></td>
+                <td class="date-cell">March 11, 2026 12:28 AM</td>
+              </tr>
+              <tr>
+                <td>Anonymous</td>
+                <td><span class="office-tag">LYDO</span></td>
+                <td class="date-cell">March 11, 2026 12:27 AM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

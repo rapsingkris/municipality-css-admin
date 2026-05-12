@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responses</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/responses.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/js/supabase_client.js" defer></script>
+  <script src="/js/responses.js" defer></script>
+
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
+      <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+    </div>
+    <div class="sidebar-brand">
+      <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+      <p class="sub-title">Client Satisfaction Survey</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-item">
+        <i class="fas fa-house"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="offices.html" class="nav-item">
+        <i class="fas fa-building"></i>
+        <span>Office</span>
+      </a>
+      <a href="survey_question.html" class="nav-item">
+        <i class="fas fa-list-ul"></i>
+        <span>Survey Question</span>
+      </a>
+      <a href="responses.html" class="nav-item active">
+        <i class="fas fa-user"></i>
+        <span>Responses</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Response Detail Modal -->
+<div id="responseDetailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:16px; width:100%; max-width:620px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+
+    <!-- Modal Header -->
+    <div style="padding:20px 24px 16px; border-bottom:1px solid #f0f2f8; display:flex; align-items:flex-start; justify-content:space-between; flex-shrink:0;">
+      <div>
+        <p id="responseDetailName" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text-dark);"></p>
+        <p id="responseDetailDate" style="margin:4px 0 0; font-size:0.8rem; color:var(--text-light);"></p>
+      </div>
+      <button onclick="document.getElementById('responseDetailModal').style.display='none'"
+              style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-light); padding:4px; line-height:1; transition:color 0.15s;"
+              onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color=''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div id="responseDetailAnswers" style="padding:20px 24px; overflow-y:auto; flex:1;">
+    </div>
+
+  </div>
+</div>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar-right">
+        <button class="icon-btn notif-btn">
+          <i class="far fa-bell"></i>
+          <span class="badge">3</span>
+        </button>
+        <div class="avatar-wrap">
+          <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+       <!-- Page Body -->
+    <section class="dashboard-body">
+
+      <!-- Header -->
+      <div class="resp-header">
+        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-dark);">
+          Survey Responses
+        </h1>
+        <button class="export-btn" id="exportBtn" onclick="exportCurrentTab()" style="display:none;">
+          <i class="fas fa-file-excel"></i> Export
+        </button>
+      </div>
+
+  <!-- Offices Grid -->
+<div class="offices-section">
+  <p class="section-title">Select an Office</p>
+  <div class="offices-grid" id="officesGrid">
+    <!-- Populated by JavaScript -->
+  </div>
+</div>
+
+      <!-- Responses Content -->
+      <div id="responsesContent" class="responses-content" style="display: none;">
+        <div class="breadcrumb">
+          <button onclick="showOffices()">Offices</button>
+          <span class="breadcrumb-sep"><i class="fas fa-chevron-right"></i></span>
+          <span id="selectedOfficeTitle" class="breadcrumb-current"></span>
+        </div>
+
+        <!-- Tabs -->
+        <!-- Tabs -->
+<div class="tabs-row">
+  <button class="tab-btn active" onclick="switchTab(0)">Overall Response</button>
+  <button class="tab-btn" onclick="switchTab(1)">Individual Response</button>
+  <button class="tab-btn" onclick="switchTab(2)">Archived Response</button>
+</div>
+
+<div class="tab-panel active" id="tab-all">
+  <!-- Populated by JS -->
+</div>
+
+<div class="tab-panel" id="tab-analytics">
+  <!-- Populated by JS -->
+</div>
+
+<div class="tab-panel" id="tab-archived">
+  <!-- Populated by JS -->
+</div>
+      </div>
+
+    </section>
+  </main>
+
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Codes - Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/qr_code.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="/js/supabase_client.js" defer></script>
+  <script src="/js/qr_code.js" defer></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
+      <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+    </div>
+    <div class="sidebar-brand">
+      <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+      <p class="sub-title">Client Satisfaction Survey</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-item">
+        <i class="fas fa-house"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="offices.html" class="nav-item">
+        <i class="fas fa-building"></i>
+        <span>Office</span>
+      </a>
+      <a href="survey_question.html" class="nav-item">
+        <i class="fas fa-list-ul"></i>
+        <span>Survey Question</span>
+      </a>
+      <a href="responses.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Responses</span>
+      </a>
+      <a href="qr_code.html" class="nav-item active">
+        <i class="fas fa-qrcode"></i>
+        <span>QR Codes</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-right">
+        <button class="icon-btn notif-btn">
+          <i class="far fa-bell"></i>
+          <span class="badge">3</span>
+        </button>
+        <div class="avatar-wrap">
+          <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Body -->
+    <section class="dashboard-body">
+      <div class="qr-header">
+        <h1 class="page-title">QR Code Generator</h1>
+        <p class="qr-subtitle">Generate and print QR codes for your survey</p>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="qr-dashboard">
+
+        <!-- Left Panel - Generate QR -->
+        <div class="qr-panel qr-generate-panel">
+          <h2><i class="fas fa-qrcode"></i> Generate QR Code</h2>
+
+          <div class="form-group">
+            <label for="qrUrl">Survey URL</label>
+            <input type="url" id="qrUrl" class="qr-input" value="https://municipality-css.vercel.app/" placeholder="Enter survey URL">
+            <small class="help-text">The URL people will be directed to when scanning</small>
+          </div>
+
+          <div class="form-group">
+            <label for="qrSize">QR Code Size</label>
+            <select id="qrSize" class="qr-select">
+              <option value="150">Small (150px)</option>
+              <option value="200" selected>Medium (200px)</option>
+              <option value="250">Large (250px)</option>
+              <option value="300">Extra Large (300px)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="qrColor">QR Code Color</label>
+            <div class="color-options">
+              <input type="color" id="qrColor" value="#1e3c72">
+              <button type="button" class="color-preset" data-color="#000000" style="background:#000000;"></button>
+              <button type="button" class="color-preset" data-color="#1e3c72" style="background:#1e3c72;"></button>
+              <button type="button" class="color-preset" data-color="#2563eb" style="background:#2563eb;"></button>
+              <button type="button" class="color-preset" data-color="#10b981" style="background:#10b981;"></button>
+              <button type="button" class="color-preset" data-color="#dc2626" style="background:#dc2626;"></button>
+            </div>
+          </div>
+
+          <button id="generateBtn" class="btn-generate">
+            <i class="fas fa-sync-alt"></i> Generate QR Code
+          </button>
+        </div>
+
+        <!-- Right Panel - Display QR -->
+        <div class="qr-panel qr-display-panel">
+          <h2><i class="fas fa-eye"></i> Preview</h2>
+
+          <div class="qr-preview">
+            <div id="qrcode" class="qr-code-container"></div>
+            <div class="qr-text-info">
+              <p><strong>Scan to take survey</strong></p>
+              <p class="qr-url-display" id="qrUrlDisplay">https://municipality-css.vercel.app/</p>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button id="printBtn" class="btn-print">
+              <i class="fas fa-print"></i> Print QR Code
+            </button>
+            <button id="downloadBtn" class="btn-download">
+              <i class="fas fa-download"></i> Download as PNG
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Print Templates Section -->
+      <div class="templates-section">
+        <h2><i class="fas fa-copy"></i> Print Templates</h2>
+        <div class="templates-grid">
+
+          <!-- Template 1: Poster Size -->
+          <div class="template-card" data-template="poster">
+            <div class="template-preview poster-preview">
+              <div class="template-qr-placeholder">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <div class="template-content">
+                <h4>Client Satisfaction Survey</h4>
+                <p>Bayan ng Luisiana</p>
+              </div>
+            </div>
+            <h3>Poster Size</h3>
+            <p>8.5 x 11 inches - Perfect for bulletin boards</p>
+            <button class="btn-template" data-template="poster">
+              <i class="fas fa-print"></i> Print Poster
+            </button>
+          </div>
+
+          <!-- Template 2: Small Sticker -->
+          <div class="template-card" data-template="sticker">
+            <div class="template-preview sticker-preview">
+              <div class="template-qr-placeholder">
+                <i class="fas fa-qrcode"></i>
+              </div>
+            </div>
+            <h3>Sticker Size</h3>
+            <p>2 x 2 inches - For countertops</p>
+            <button class="btn-template" data-template="sticker">
+              <i class="fas fa-print"></i> Print Stickers
+            </button>
+          </div>
+
+          <!-- Template 3: Multiple per Page -->
+          <div class="template-card" data-template="multiple">
+            <div class="template-preview multiple-preview">
+              <div class="multiple-grid">
+                <div class="mini-qr"></div>
+                <div class="mini-qr"></div>
+                <div class="mini-qr"></div>
+                <div class="mini-qr"></div>
+              </div>
+            </div>
+            <h3>4 per Page</h3>
+            <p>Print 4 QR codes on one sheet</p>
+            <button class="btn-template" data-template="multiple">
+              <i class="fas fa-print"></i> Print Multiple
+            </button>
+          </template>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Hidden Print Template (for poster printing) -->
+  <div id="printTemplate" style="display: none;">
+    <div class="print-poster">
+      <div class="print-logos">
+        <img src="/images/bagong_pilipinas_logo.png" alt="Bagong Pilipinas">
+        <img src="/images/luisiana_logo.png" alt="Luisiana">
+      </div>
+      <h2>Municipality of Luisiana</h2>
+      <h3>Client Satisfaction Survey</h3>
+      <div id="printQRCode"></div>
+      <p class="print-instruction">Scan this QR code to take our survey</p>
+      <p class="print-url" id="printUrl"></p>
+      <p class="print-footer">Your feedback helps us serve you better</p>
+    </div>
+  </div>
+
+</body>
+</html>

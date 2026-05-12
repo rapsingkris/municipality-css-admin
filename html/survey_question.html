@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Survey Questions</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/survey_question.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/js/supabase_client.js" defer></script>
+  <script src="/js/survey_question.js" defer></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
+      <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+    </div>
+    <div class="sidebar-brand">
+      <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+      <p class="sub-title">Client Satisfaction Survey</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-item">
+        <i class="fas fa-house"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="offices.html" class="nav-item">
+        <i class="fas fa-building"></i>
+        <span>Office</span>
+      </a>
+      <a href="survey_question.html" class="nav-item active">
+        <i class="fas fa-list-ul"></i>
+        <span>Survey Question</span>
+      </a>
+      <a href="responses.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Responses</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-right">
+        <button class="icon-btn notif-btn">
+          <i class="far fa-bell"></i>
+          <span class="badge">3</span>
+        </button>
+        <div class="avatar-wrap">
+          <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+    <section class="dashboard-body">
+
+      <!-- Page Title Row -->
+      <div class="sq-header">
+        <h1 class="page-title" style="margin-bottom:0;">Survey Questions</h1>
+        <div class="sq-header-btns">
+          <button class="sq-btn sq-btn-edit" id="editToggleBtn">
+            <i class="fas fa-pen"></i> EDIT
+          </button>
+          <button class="sq-btn sq-btn-add" id="addPageBtn">
+            <i class="fas fa-plus"></i> ADD PAGE
+          </button>
+        </div>
+      </div>
+
+      <!-- PAGE 1: Respondent Info Card -->
+      <div class="sq-page-block" id="page1">
+        <div class="sq-page-label">Page 1</div>
+        <div class="info-card">
+
+          <div class="field-group">
+            <label class="field-label">Pangalan</label>
+            <div class="field-row">
+              <input type="text" class="field-input" placeholder="Pangalan" />
+              <input type="text" class="field-input" placeholder="Apelyido" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Email Address</label>
+            <input type="email" class="field-input full" placeholder="Email Address" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Petsa</label>
+            <div class="date-wrap">
+              <input type="text" class="field-input" placeholder="mm/dd/yyyy" />
+              <i class="fas fa-calendar-days date-icon"></i>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Kasarian at Edad</label>
+            <div class="field-row">
+              <input type="text" class="field-input" placeholder="Kasarian" />
+              <input type="text" class="field-input" placeholder="Edad" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Tanggapan na Pinuntahan</label>
+            <div class="select-wrap full">
+              <select class="field-input field-select">
+                <option value="" disabled selected>Pumili ang Tanggapang Pinuntahan</option>
+                <option>LYDO</option>
+                <option>Mayor's Office</option>
+                <option>Municipal Civil Registrar</option>
+                <option>Municipal Health Office</option>
+                <option>Municipal Assessor's Office</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Uri ng Kliyente</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" name="kliyente" value="mamamayan" checked />
+                <span class="radio-custom"></span>
+                Mamamayan
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="kliyente" value="negosyo" />
+                <span class="radio-custom"></span>
+                Negosyo
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="kliyente" value="gobyerno" />
+                <span class="radio-custom"></span>
+                Gobyerno, Empleyado o Ahensyal
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Rehiyon</label>
+            <div class="select-wrap full">
+              <select class="field-input field-select">
+                <option value="" disabled selected>Pumili ng Rehiyon</option>
+                <option>Region IV-A (CALABARZON)</option>
+                <option>NCR</option>
+                <option>Region III</option>
+                <option>Region V</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Uri ng Transaksyon o Serbisyo</label>
+            <input type="text" class="field-input full" placeholder="Hal. Pag-re-new ng permit" />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PAGE 2: CC Questions -->
+      <div class="sq-page-block" id="page2">
+        <div class="sq-page-label">Page 2</div>
+
+        <div class="panuto-block">
+          <p class="panuto-title">PANUTO :</p>
+          <p class="panuto-text">
+            Lagyan ng tsek (&#10003;) sa kinalagyang kahon ng inyong sagot sa mga sumusunod na katanungan tungkol sa Citizen's Charter (CC).
+            Ito ay isang seksyal na dokumento na naglalaman ng mga serbisyo sa isang ahensya/opisina ng gobyerno, makikita rito ang mga kinakailangan na
+            dokumento, kaikulang bayarin, at pangkabuuan oras ng pagproseso.
+          </p>
+        </div>
+
+        <div class="cc-block">
+          <div class="cc-label-col"><span class="cc-tag">CC1</span></div>
+          <div class="cc-content-col">
+            <p class="cc-question">Alin sa mga sumusunod ang nag-larawan sa iyong kaalaman sa CC</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Nabasa ko ang CC bago pumunta sa opisina ng gobyerno</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Nabasa ko ang CC sa opisina ng gobyerno</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Nakarinig ako ng CC mula sa iba</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Hindi ko pa nababasa ang CC</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-block">
+          <div class="cc-label-col"><span class="cc-tag">CC2</span></div>
+          <div class="cc-content-col">
+            <p class="cc-question">Kung alam ang CC (nag-tsek sa opsyon 1&ndash;3 sa CC1), masasabi mo ba na ang CC nang napuntahang opisina ay&hellip;</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Madaling makita</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Madaling basahin at maintindihan</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Nakakatulong para malaman ang mga kinakailangan ng serbisyo</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Hindi ko alam / Hindi applicable</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="cc-block">
+          <div class="cc-label-col"><span class="cc-tag">CC3</span></div>
+          <div class="cc-content-col">
+            <p class="cc-question">Kung alam ang CC (nag-tsek sa opsyon 1&ndash;3 sa CC1), gaano nakatulong ang CC sa transaksyon mo?</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Napaghanda ko ang mga kinakailangang dokumento bago pumunta</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Alam ko na ang mga hakbang ng proseso</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Nakatulong ito para mapabilis ang aking transaksyon</span></label>
+              <label class="checkbox-item"><input type="checkbox" /><span class="check-custom"></span><span class="check-label">Hindi ko alam / Hindi applicable</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Page Placeholder (hidden by default) -->
+      <div class="sq-page-block sq-page-empty hidden" id="newPagePlaceholder">
+        <div class="sq-page-label">Page 3</div>
+
+      </div>
+
+    </section>
+  </main>
+</body>
+</html>
