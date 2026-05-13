@@ -1,3 +1,65 @@
+// ============================================
+// ROLE CHECK FUNCTIONS
+// ============================================
+let currentUserRole = null;
+
+async function checkUserRole() {
+  const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return 'viewer';
+  const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+  return adminData?.role || 'viewer';
+}
+
+function isViewer() {
+  if (currentUserRole === 'viewer') {
+    showModal('Viewers cannot export data. Please contact an administrator.', 'warning');
+    return true;
+  }
+  return false;
+}
+
+function showModal(message, type = 'warning') {
+  const existingModal = document.getElementById('customViewerModal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'customViewerModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+  `;
+
+  const icon = type === 'warning' ? '⚠️' : '❌';
+  const color = 'var(--accent-blue)';
+
+  modal.innerHTML = `
+    <div style="background: white; border-radius: 16px; padding: 24px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <div style="font-size: 48px; margin-bottom: 16px;">${icon}</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">Access Denied</h3>
+      <p style="font-size: 14px; color: #475569; margin-bottom: 24px; line-height: 1.5;">${message}</p>
+      <button id="closeViewerModalBtn" style="background: ${color}; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">OK</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  const closeBtn = modal.querySelector('#closeViewerModalBtn');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+}
+
 // ==================== RESPONSES.JS ====================
 
 let officesData = [];
@@ -567,6 +629,7 @@ async function renderArchiveOverallTab(content, archive) {
 // ══════════════════════════════════════════════════════════════
 
 window.exportArchivedSurvey = async function() {
+  if (isViewer()) return;
   const archive = window.currentArchivedData;
   if (!archive) {
     alert("No archive data to export.");
@@ -2586,6 +2649,7 @@ function xlAddCoverSheet(wb, officeName, tabLabel) {
 }
 
 async function exportCurrentTab() {
+    if (isViewer()) return;
   if (!currentOfficeId) return;
   const btn = document.getElementById('exportBtn');
   const originalHtml = btn.innerHTML;
@@ -2964,6 +3028,7 @@ async function exportArchivedTab(wb, officeName) {
     ws.sheetProtection = { sheet: true, formatCells: false, formatColumns: false, formatRows: false };
   });
 }
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  currentUserRole = await checkUserRole();
   fetchOffices();
 });

@@ -8,11 +8,60 @@
   <link rel="stylesheet" href="/css/survey_question.css" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase_client.js" defer></script>
   <script src="/js/survey_question.js" defer></script>
 </head>
 <body>
+<script>
+  // Check if user is logged in
+  if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+    window.location.href = '../index.html';
+  }
+
+  // 🔐 ROLE CHANGE: Get user role and apply restrictions
+  (async function() {
+    const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+    const userRole = adminData?.role || 'viewer';
+
+    sessionStorage.setItem('userRole', userRole);
+
+    // 🔐 ROLE CHANGE: If viewer, disable edit button and hide add page button
+    if (userRole === 'viewer') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const editBtn = document.getElementById('editToggleBtn');
+        const addPageBtn = document.getElementById('addPageBtn');
+
+        if (editBtn) {
+          editBtn.disabled = true;
+          editBtn.style.opacity = '0.5';
+          editBtn.style.cursor = 'not-allowed';
+          editBtn.title = 'Viewers cannot edit survey questions';
+        }
+
+        if (addPageBtn) {
+          addPageBtn.disabled = true;
+          addPageBtn.style.opacity = '0.5';
+          addPageBtn.style.cursor = 'not-allowed';
+          addPageBtn.title = 'Viewers cannot add pages';
+        }
+
+        // Show viewer banner
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background: #fef3c7; color: #92400e; padding: 8px 16px; text-align: center; font-size: 13px; border-bottom: 1px solid #fed7aa; position: sticky; top: 0; z-index: 1000;';
+        banner.innerHTML = '<i class="fas fa-eye"></i> Viewer Mode — You can view survey questions but cannot edit or make changes';
+        document.body.insertBefore(banner, document.body.firstChild);
+      });
+    }
+  })();
+</script>
 
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -44,6 +93,15 @@
       <a href="qr_code.html" class="nav-item">
         <i class="fas fa-qrcode"></i>
         <span>QR Code</span>
+      </a>
+      <a href="admin_invite.html" class="nav-item">
+        <i class="fas fa-user-plus"></i>
+        <span>Invite Admin</span>
+      </a>
+
+      <a href="#" id="logoutBtn" class="nav-item nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
       </a>
     </nav>
   </aside>
@@ -238,5 +296,18 @@
   // Set this when the page loads or when office is selected
   window.currentOfficeId = null; // Will be set by responses.js
   window.currentOfficeName = '';
+
+
+  // Logout functionality
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      sessionStorage.removeItem('isAdminLoggedIn');
+      sessionStorage.removeItem('adminEmail');
+      sessionStorage.removeItem('loginTime');
+      window.location.href = '../index.html';
+    });
+  }
 </script>
 </html>

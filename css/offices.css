@@ -466,6 +466,43 @@ body {
 
 
 
+
+    /* Action buttons styling */
+.action-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 4px;
+}
+
+.edit-btn {
+  color: #3b82f6;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: #eff6ff;
+  transform: scale(1.05);
+}
+
+.delete-btn {
+  color: #ef4444;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #fef2f2;
+  transform: scale(1.05);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
 /* Use class instead of ID */
 .nav-logout {
   margin-top: auto;

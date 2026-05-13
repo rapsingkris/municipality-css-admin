@@ -21,6 +21,40 @@
   }
 </script>
 
+<script>
+  // Role-based restriction - disable Survey URL input for viewers
+  (function() {
+    // Get role from sessionStorage (set during login)
+    const userRole = sessionStorage.getItem('userRole');
+
+    // If viewer, disable ONLY the Survey URL input
+    if (userRole === 'viewer') {
+      // Wait for DOM to be ready
+      document.addEventListener('DOMContentLoaded', () => {
+        const urlInput = document.getElementById('qrUrl');
+        if (urlInput) {
+          urlInput.disabled = true;
+          urlInput.style.backgroundColor = '#f3f4f6';
+          urlInput.style.cursor = 'not-allowed';
+          urlInput.title = 'Viewers cannot change the survey URL';
+
+          // Also prevent any key events
+          urlInput.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            return false;
+          });
+
+          // Prevent paste
+          urlInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            return false;
+          });
+        }
+      });
+    }
+  })();
+</script>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -51,6 +85,15 @@
       <a href="qr_code.html" class="nav-item active">
         <i class="fas fa-qrcode"></i>
         <span>QR Code</span>
+      </a>
+      <a href="admin_invite.html" class="nav-item">
+        <i class="fas fa-user-plus"></i>
+        <span>Invite Admin</span>
+      </a>
+
+      <a href="#" id="logoutBtn" class="nav-item nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
       </a>
     </nav>
   </aside>
@@ -140,5 +183,18 @@
     </section>
   </main>
 
+<script>
+  // Logout functionality
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      sessionStorage.removeItem('isAdminLoggedIn');
+      sessionStorage.removeItem('adminEmail');
+      sessionStorage.removeItem('loginTime');
+      window.location.href = '../index.html';
+    });
+  }
+</script>
 </body>
 </html>

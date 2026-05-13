@@ -5,413 +5,816 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Invite Admin - Municipality of Luisiana</title>
   <link rel="stylesheet" href="/css/dashboard.css" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --sidebar-w: 260px;
+      --blue: #004aad;
+      --blue-dark: #003380;
+      --blue-light: #e8f0fb;
+      --green: #10b981;
+      --red: #dc2626;
+      --amber: #d97706;
+      --text: #1e293b;
+      --text-mid: #475569;
+      --text-soft: #64748b;
+      --border: #e2e8f0;
+      --bg: #f3f5fa;
+      --card: #ffffff;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
     }
 
     body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: #f3f5fa;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .page-wrap {
+      margin-left: var(--sidebar-w);
       min-height: 100vh;
       padding: 2rem;
+      width: calc(100% - var(--sidebar-w));
+      max-width: none;
     }
 
-    .invite-container {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      color: #1e293b;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .subtitle {
-      color: #64748b;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-    }
-
-    .form-group {
+    /* ── PAGE HEADER ── */
+    .page-header {
       margin-bottom: 1.5rem;
     }
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #1e293b;
-      font-size: 0.85rem;
+    .page-header h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    input, select {
+    .page-header p {
+      color: var(--text-soft);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
       width: 100%;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title i { color: var(--blue); }
+
+    /* ── FORM ── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input[type="email"], select {
       padding: 0.75rem 1rem;
-      border: 1px solid #cbd5e1;
+      border: 1.5px solid var(--border);
       border-radius: 10px;
       font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
       transition: all 0.2s;
+      width: 100%;
     }
 
-    input:focus, select:focus {
+    input[type="email"]:focus, select:focus {
       outline: none;
-      border-color: #004aad;
+      border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(0,74,173,0.1);
     }
 
-    button {
-      background: #004aad;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.75rem 1.25rem;
       border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      width: 100%;
+      border: none;
       font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    button:hover {
-      background: #003380;
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      width: 100%;
+    }
+    .btn-primary:hover {
+      background: var(--blue-dark);
       transform: translateY(-1px);
     }
-
-    .invite-link-box {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #f1f5f9;
-      border-radius: 12px;
-      display: none;
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .invite-link-box label {
-      font-size: 0.8rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .link-wrapper {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .invite-link-box input {
-      flex: 1;
-      background: white;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-
-    .copy-btn {
-      width: auto;
-      padding: 0.6rem 1rem;
+    .btn-copy {
       background: #3b82f6;
-      margin: 0;
-    }
-
-    .copy-btn:hover {
-      background: #2563ed;
-    }
-
-    .success {
-      color: #10b981;
-      margin-top: 0.75rem;
-      font-size: 0.85rem;
-    }
-
-    .error {
-      color: #dc2626;
-      margin-top: 0.75rem;
-      font-size: 0.85rem;
-    }
-
-        .invites-list {
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .invites-list h3 {
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      color: #1e293b;
-    }
-
-    .invites-list h3 i {
-      margin-right: 0.5rem;
-      color: #004aad;
-    }
-
-    .invite-item {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.2s;
-    }
-
-    .invite-item:last-child {
-      border-bottom: none;
-    }
-
-    .invite-item:hover {
-      background: #f8fafc;
-    }
-
-    .invite-info {
-      flex: 1;
-    }
-
-    .invite-email {
-      font-weight: 500;
-      color: #1e293b;
-      font-size: 0.85rem;
-    }
-
-    .invite-expiry {
-      font-size: 0.7rem;
-      color: #64748b;
-      margin-top: 0.2rem;
-    }
-
-    .invite-status {
-      font-size: 0.7rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 20px;
-      font-weight: 500;
+      color: #fff;
+      padding: 0.6rem 1rem;
       white-space: nowrap;
     }
-
-    .status-used {
-      background: #dcfce7;
-      color: #15803d;
+    .btn-copy:hover {
+      background: #2563eb;
     }
 
-    .status-pending {
-      background: #fef3c7;
-      color: #d97706;
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .btn-edit-role { background: #e2e8f0; color: #334155; }
+    .btn-edit-role:hover { background: #cbd5e1; }
+
+    .btn-danger-soft { background: #fee2e2; color: #b91c1c; }
+    .btn-danger-soft:hover { background: #fecaca; }
+
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    /* ── INVITE RESULT BOX ── */
+    .invite-result {
+      display: none;
+      margin-top: 1.5rem;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .invite-result label {
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+      display: block;
+      color: var(--text-mid);
+    }
+
+    .link-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .link-row input {
+      flex: 1;
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #fff;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .result-msg {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 0.7rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-mid);
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .data-table tr:hover td { background: #fafbfd; }
+
+    .cell-email {
+      font-weight: 500;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .cell-sub {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .chip-super { background: #f1e8ff; color: #6b21a5; }
+    .chip-admin { background: #dbeafe; color: #1e40af; }
+    .chip-viewer { background: #fef9c3; color: #854d0e; }
+    .chip-pending { background: #fef3c7; color: #d97706; }
+
+    .action-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .empty-state {
-      padding: 2rem;
       text-align: center;
-      color: #94a3b8;
-      font-size: 0.85rem;
+      padding: 2.5rem 1rem;
+      color: var(--text-soft);
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-      }
-      .invite-container {
-        padding: 1.5rem;
-      }
-      .link-wrapper {
-        flex-direction: column;
-      }
-      .copy-btn {
-        width: 100%;
-      }
-      .invite-item {
+    .empty-state i {
+      font-size: 2rem;
+      opacity: 0.35;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p { font-size: 0.85rem; }
+
+    /* ── PERMISSION BLOCKED ── */
+    .viewer-blocked {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: #9a3412;
+      margin-bottom: 1rem;
+    }
+
+    .viewer-blocked i { font-size: 1.1rem; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 18px;
+      width: 90%;
+      max-width: 420px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+      text-align: center;
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .modal-box h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-box p {
+      font-size: 0.85rem;
+      color: var(--text-mid);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .modal-box select {
+      margin-bottom: 1.25rem;
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 40px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: #fff;
+      z-index: 1200;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Extra margin for last card */
+    .card:last-child {
+      margin-bottom: 2rem;
+    }
+
+    /* Make form elements wider */
+    .form-group input,
+    .form-group select,
+    .btn-primary {
+      width: 100%;
+    }
+
+    .link-row input {
+      width: 100%;
+    }
+
+    /* Tables take full width */
+    .data-table {
+      width: 100%;
+    }
+
+    /* Action buttons take full width on smaller screens */
+    @media (max-width: 1200px) {
+      .action-cell {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
       }
-      .invite-status {
-        align-self: flex-start;
+      .action-cell .btn-sm {
+        width: 100%;
+        justify-content: center;
       }
+    }
+
+    /* Add space after Active Admins card */
+    .card:last-child {
+      margin-bottom: 3rem;
+    }
+
+    /* Copy invite button style */
+    .btn-copy-invite {
+      background: #3b82f6;
+      color: white;
+      padding: 0.3rem 0.7rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-copy-invite:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 70px; }
+      .sidebar-brand, .sidebar-nav span { display: none; }
+      .sidebar { padding: 1rem 0.5rem; align-items: center; }
+      .sidebar-logo { flex-direction: column; }
+      .nav-item { justify-content: center; }
+      .nav-item i { width: auto; }
+      .link-row { flex-direction: column; }
+      .btn-copy { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
-  <div class="invite-container">
-    <h2><i class="fas fa-user-plus"></i> Invite New Admin</h2>
-    <p class="subtitle">Send an invite link to add new administrators to the system.</p>
 
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/images/bagong_pilipinas_logo.png" alt="Logo" class="logo-img" />
+    <img src="/images/luisiana_logo.png" alt="Logo" class="logo-img" />
+  </div>
+  <div class="sidebar-brand">
+    <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+    <p class="sub-title">Client Satisfaction Survey</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><i class="fas fa-house"></i><span>Dashboard</span></a>
+    <a href="offices.html" class="nav-item"><i class="fas fa-building"></i><span>Office</span></a>
+    <a href="survey_question.html" class="nav-item"><i class="fas fa-list-ul"></i><span>Survey Question</span></a>
+    <a href="responses.html" class="nav-item"><i class="fas fa-user"></i><span>Responses</span></a>
+    <a href="qr_code.html" class="nav-item"><i class="fas fa-qrcode"></i><span>QR Code</span></a>
+    <a href="admin_invite.html" class="nav-item active"><i class="fas fa-user-plus"></i><span>Invite Admin</span></a>
+    <a href="#" id="logoutBtn" class="nav-item nav-logout"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+  </nav>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="page-wrap">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-user-shield" style="color:var(--blue);"></i> Admin Management</h1>
+    <p>Manage admin roles and permissions. Role hierarchy: Super Admin &gt; Admin &gt; Viewer.</p>
+  </div>
+
+  <!-- Invite Form Card -->
+  <div class="card" id="inviteCard">
+    <div class="card-title"><i class="fas fa-paper-plane"></i> Invite New Administrator</div>
+    <div id="viewerBlockMsg" style="display:none;" class="viewer-blocked">
+      <i class="fas fa-lock"></i>
+      <span>Your account is <strong>Viewer</strong> — you cannot send invitations or modify admin roles.</span>
+    </div>
     <form id="inviteForm">
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="inviteEmail" required placeholder="admin@example.com">
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="inviteEmail">Email Address</label>
+        <input type="email" id="inviteEmail" required placeholder="admin@luisiana.gov.ph" />
       </div>
 
-      <div class="form-group">
-        <label>Role</label>
+      <div class="form-group" id="roleSelectWrap" style="margin-bottom: 1rem;">
+        <label for="inviteRole">Role to Assign</label>
         <select id="inviteRole">
-          <option value="admin">Admin</option>
           <option value="viewer">Viewer (Read-only)</option>
+          <option value="admin">Admin</option>
           <option value="super_admin">Super Admin</option>
         </select>
       </div>
 
-      <button type="submit">
+      <button type="submit" class="btn btn-primary" id="generateBtn">
         <i class="fas fa-paper-plane"></i> Generate Invite Link
       </button>
     </form>
 
-    <div id="inviteResult" class="invite-link-box">
-      <label>Invite Link (share with new admin):</label>
-      <div class="link-wrapper">
-        <input type="text" id="inviteLink" readonly>
-        <button type="button" id="copyLinkBtn" class="copy-btn">
-          <i class="fas fa-copy"></i> Copy
-        </button>
+    <div class="invite-result" id="inviteResult">
+      <label>Share this invite link with the new administrator:</label>
+      <div class="link-row">
+        <input type="text" id="inviteLink" readonly />
+        <button class="btn btn-copy" id="copyLinkBtn"><i class="fas fa-copy"></i> Copy</button>
       </div>
-      <div id="inviteMessage"></div>
-    </div>
-
-    <div class="invites-list">
-      <h3><i class="fas fa-clock"></i> Pending Invites</h3>
-      <div id="pendingInvites"></div>
+      <div class="result-msg"><i class="fas fa-check-circle"></i> Invite link created! Valid for 7 days.</div>
     </div>
   </div>
 
+  <!-- Pending Invites Card -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-clock"></i> Pending Invites</div>
+    <div id="pendingInvites">
+      <div class="empty-state"><i class="fas fa-inbox"></i><p>No pending invites</p></div>
+    </div>
+  </div>
+
+  <!-- Active Admins Card -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-users"></i> Active Administrators</div>
+    <div id="activeAdminsList">
+      <div class="empty-state"><i class="fas fa-user-slash"></i><p>Loading...</p></div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- ═══ MODALS ═══ -->
+<div id="roleModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon" style="color:var(--blue);">🛡️</div>
+    <h3>Change Role</h3>
+    <p>Editing role for <strong id="roleModalEmail"></strong></p>
+    <select id="roleModalSelect">
+      <option value="super_admin">Super Admin</option>
+      <option value="admin">Admin</option>
+      <option value="viewer">Viewer</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="roleModalConfirm">Save Change</button>
+      <button class="btn btn-secondary" id="roleModalCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="kickModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3>Remove Administrator</h3>
+    <p>Are you sure you want to remove <strong id="kickModalEmail"></strong>? This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="kickModalConfirm">Yes, Remove</button>
+      <button class="btn btn-secondary" id="kickModalCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
 <script>
-    const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
-    const sb = supabase.createClient(supabaseUrl, supabaseKey);
+/* ══════════════════════════════════
+   SUPABASE SETUP
+══════════════════════════════════ */
+const SUPABASE_URL  = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentUser = null;
+const ROLE_LABELS = { super_admin: 'Super Admin', admin: 'Admin', viewer: 'Viewer' };
+const ROLE_PERMISSIONS = {
+  super_admin: { canInvite: ['super_admin', 'admin', 'viewer'], canKick: ['admin', 'viewer'], canEditRole: ['admin', 'viewer'] },
+  admin: { canInvite: ['viewer'], canKick: ['viewer'], canEditRole: ['viewer'] },
+  viewer: { canInvite: [], canKick: [], canEditRole: [] }
+};
 
-    async function checkAuth() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        window.location.href = '../index.html';
-        return;
-      }
+let currentUser = null;
+let currentUserRole = null;
+let pendingRoleEdit = null;
+let pendingKick = null;
 
-      const { data: adminCheck } = await sb
-        .from('admin_users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#dc2626' : '#1e293b';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
 
-      if (!adminCheck) {
-        await sb.auth.signOut();
-        window.location.href = '../index.html';
-      }
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function genToken() { return 'inv_' + Math.random().toString(36).slice(2,18) + Date.now().toString(36); }
 
-      currentUser = session.user;
-      loadPendingInvites();
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '../index.html'; return; }
+  const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+  if (!adminData) { await sb.auth.signOut(); window.location.href = '../index.html'; return; }
+  currentUser = session.user;
+  currentUserRole = adminData.role;
+  applyRoleRestrictions();
+  await cleanupDuplicates();
+  loadPendingInvites();
+  loadActiveAdmins();
+  subscribeRealtime();
+}
+
+function applyRoleRestrictions() {
+  if (currentUserRole === 'viewer') {
+    document.getElementById('inviteForm').style.display = 'none';
+    document.getElementById('viewerBlockMsg').style.display = 'flex';
+    return;
+  }
+  if (currentUserRole === 'admin') {
+    const roleSelect = document.getElementById('inviteRole');
+    roleSelect.innerHTML = '<option value="viewer">Viewer (Read-only)</option>';
+  }
+}
+
+async function isEmailTaken(email) {
+  const emailLower = email.toLowerCase().trim();
+  const { data: active } = await sb.from('admin_users').select('id').ilike('email', emailLower);
+  if (active && active.length > 0) return { taken: true, reason: 'already an active administrator' };
+  const { data: pending } = await sb.from('admin_invites').select('id').ilike('email', emailLower).eq('used', false).gt('expires_at', new Date().toISOString());
+  if (pending && pending.length > 0) return { taken: true, reason: 'already has a pending invite' };
+  return { taken: false };
+}
+
+async function cleanupDuplicates() {
+  const { data: admins } = await sb.from('admin_users').select('email');
+  if (!admins) return;
+  const adminEmails = admins.map(a => a.email.toLowerCase());
+  const { data: invites } = await sb.from('admin_invites').select('id, email').eq('used', false).gt('expires_at', new Date().toISOString());
+  if (!invites) return;
+  for (const inv of invites) {
+    if (adminEmails.includes(inv.email.toLowerCase())) {
+      await sb.from('admin_invites').delete().eq('id', inv.id);
     }
+  }
+}
 
-    // Listen for real-time updates on invites
-    function subscribeToInvites() {
-      const channel = sb.channel('admin_invites_changes')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'admin_invites' },
-          () => loadPendingInvites()
-        )
-        .subscribe();
+function getBaseUrl() {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${window.location.host}`;
+  }
+  return 'https://municipality-css-admin.vercel.app';
+}
+
+document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (currentUserRole === 'viewer') { toast('Permission denied.', 'error'); return; }
+  const email = document.getElementById('inviteEmail').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  const perms = ROLE_PERMISSIONS[currentUserRole];
+  if (!perms.canInvite.includes(role)) {
+    toast(`⛔ As ${ROLE_LABELS[currentUserRole]}, you cannot invite a ${ROLE_LABELS[role]}.`, 'error');
+    return;
+  }
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+  const { taken, reason } = await isEmailTaken(email);
+  if (taken) {
+    toast(`❌ ${email} is ${reason}.`, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Generate Invite Link';
+    return;
+  }
+  const token = genToken();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
+  const { error } = await sb.from('admin_invites').insert({ email, token, role, expires_at: expiresAt.toISOString(), invited_by: currentUser.id, used: false });
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-paper-plane"></i> Generate Invite Link';
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  const base = getBaseUrl();
+  const link = `${base}/html/register.html?token=${token}&email=${encodeURIComponent(email)}&role=${role}`;
+  document.getElementById('inviteLink').value = link;
+  document.getElementById('inviteResult').style.display = 'block';
+  document.getElementById('inviteEmail').value = '';
+  toast('Invite link generated!');
+  loadPendingInvites();
+});
+
+document.getElementById('copyLinkBtn').addEventListener('click', () => {
+  const inp = document.getElementById('inviteLink');
+  inp.select();
+  navigator.clipboard.writeText(inp.value);
+  toast('📋 Copied to clipboard!');
+});
+
+async function loadPendingInvites() {
+  const { data } = await sb.from('admin_invites').select('*').eq('used', false).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false });
+  const container = document.getElementById('pendingInvites');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No pending invites</p></div>';
+    return;
+  }
+
+  const base = getBaseUrl();
+  container.innerHTML = `<table class="data-table"><thead><tr><th>Email</th><th>Role</th><th>Expires</th><th>Status</th><th>Action</th></tr></thead><tbody>${data.map(inv => {
+    const inviteLink = `${base}/html/register.html?token=${inv.token}&email=${encodeURIComponent(inv.email)}&role=${inv.role || 'admin'}`;
+    return `
+      <tr>
+        <td class="cell-email">${esc(inv.email)}</td>
+        <td><span class="role-chip chip-${inv.role || 'admin'}">${ROLE_LABELS[inv.role] || 'Admin'}</span></td>
+        <td style="font-size:0.8rem;">${new Date(inv.expires_at).toLocaleDateString()}</td>
+        <td><span class="role-chip chip-pending">Pending</span></td>
+        <td><button class="btn-copy-invite" data-link="${esc(inviteLink)}" data-email="${esc(inv.email)}"><i class="fas fa-copy"></i> Copy Link</button></td>
+      </tr>
+    `;
+  }).join('')}</tbody></table>`;
+
+  // Add event listeners to copy buttons
+  document.querySelectorAll('.btn-copy-invite').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const link = btn.dataset.link;
+      const email = btn.dataset.email;
+      await navigator.clipboard.writeText(link);
+      toast(`Invite link copied for ${email}!`);
+    });
+  });
+}
+
+async function loadActiveAdmins() {
+  const { data } = await sb.from('admin_users').select('id, email, role, created_at').order('created_at');
+  const container = document.getElementById('activeAdminsList');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><p>No active administrators found</p></div>';
+    return;
+  }
+  const rows = data.map(admin => {
+    const isSelf = currentUser && admin.id === currentUser.id;
+    const canEdit = !isSelf && (ROLE_PERMISSIONS[currentUserRole]?.canEditRole || []).includes(admin.role);
+    const canKick = !isSelf && (ROLE_PERMISSIONS[currentUserRole]?.canKick || []).includes(admin.role);
+    let actions = '';
+    if (isSelf) actions = '<span style="color:var(--text-soft);"><i class="fas fa-user-check"></i> You</span>';
+    else {
+      if (canEdit) actions += `<button class="btn btn-sm btn-edit-role" data-id="${admin.id}" data-email="${esc(admin.email)}" data-role="${admin.role}"><i class="fas fa-user-cog"></i> Edit Role</button>`;
+      if (canKick) actions += `<button class="btn btn-sm btn-danger-soft" data-kick-id="${admin.id}" data-kick-email="${esc(admin.email)}"><i class="fas fa-trash-alt"></i> Kick</button>`;
+      if (!canEdit && !canKick) actions = '<span style="color:var(--text-soft);"><i class="fas fa-lock"></i> No access</span>';
     }
+    return `<tr><td><div class="cell-email">${esc(admin.email)}</div><div class="cell-sub">Joined ${new Date(admin.created_at).toLocaleDateString()}</div></td><td><span class="role-chip chip-${admin.role}">${ROLE_LABELS[admin.role]}</span></td><td><div class="action-cell">${actions}</div></td></tr>`;
+  }).join('');
+  container.innerHTML = `<table class="data-table"><thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.querySelectorAll('.btn-edit-role').forEach(btn => btn.addEventListener('click', () => { pendingRoleEdit = { id: btn.dataset.id, email: btn.dataset.email, currentRole: btn.dataset.role }; document.getElementById('roleModalEmail').textContent = btn.dataset.email; document.getElementById('roleModal').classList.add('active'); }));
+  document.querySelectorAll('[data-kick-id]').forEach(btn => btn.addEventListener('click', () => { pendingKick = { id: btn.dataset.kickId, email: btn.dataset.kickEmail }; document.getElementById('kickModalEmail').textContent = btn.dataset.kickEmail; document.getElementById('kickModal').classList.add('active'); }));
+}
 
-    const inviteForm = document.getElementById('inviteForm');
-    if (inviteForm) {
-      inviteForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+document.getElementById('roleModalConfirm').addEventListener('click', async () => {
+  if (!pendingRoleEdit) return;
+  const newRole = document.getElementById('roleModalSelect').value;
+  closeModal('roleModal');
+  if (newRole === pendingRoleEdit.currentRole) { toast('Role unchanged.', 'info'); return; }
+  const { error } = await sb.from('admin_users').update({ role: newRole }).eq('id', pendingRoleEdit.id);
+  if (error) toast('Error: ' + error.message, 'error');
+  else toast(`Role updated to ${ROLE_LABELS[newRole]} for ${pendingRoleEdit.email}`);
+  loadActiveAdmins();
+  pendingRoleEdit = null;
+});
 
-        const email = document.getElementById('inviteEmail').value;
-        const role = document.getElementById('inviteRole').value;
-        const token = generateToken();
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
+document.getElementById('kickModalConfirm').addEventListener('click', async () => {
+  if (!pendingKick) return;
+  const { id, email } = pendingKick;
+  closeModal('kickModal');
+  if (id === currentUser.id) { toast('You cannot remove yourself.', 'error'); return; }
+  const { error } = await sb.from('admin_users').delete().eq('id', id);
+  if (error) toast('Error: ' + error.message, 'error');
+  else toast(`🗑️ ${email} has been removed.`);
+  loadActiveAdmins();
+  loadPendingInvites();
+  await cleanupDuplicates();
+  pendingKick = null;
+});
 
-        const { data, error } = await sb
-          .from('admin_invites')
-          .insert({
-            email: email,
-            token: token,
-            expires_at: expiresAt.toISOString(),
-            invited_by: currentUser.id
-          })
-          .select();
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.getElementById('roleModalCancel').addEventListener('click', () => closeModal('roleModal'));
+document.getElementById('kickModalCancel').addEventListener('click', () => closeModal('kickModal'));
+document.getElementById('roleModal').addEventListener('click', e => { if (e.target === document.getElementById('roleModal')) closeModal('roleModal'); });
+document.getElementById('kickModal').addEventListener('click', e => { if (e.target === document.getElementById('kickModal')) closeModal('kickModal'); });
 
-        if (error) {
-          document.getElementById('inviteMessage').innerHTML = `<span class="error">Error: ${error.message}</span>`;
-        } else {
-          const baseUrl = window.location.hostname === 'localhost'
-            ? 'http://localhost:5500'
-            : 'https://municipality-css-admin.vercel.app';
+function subscribeRealtime() {
+  sb.channel('invite-watch').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_invites' }, async () => { await cleanupDuplicates(); loadPendingInvites(); }).subscribe();
+  sb.channel('admin-watch').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_users' }, async () => { await cleanupDuplicates(); loadActiveAdmins(); }).subscribe();
+}
 
-          const inviteLink = `${baseUrl}/html/register.html?token=${token}&email=${encodeURIComponent(email)}&role=${role}`;
+document.getElementById('logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await sb.auth.signOut(); window.location.href = '../index.html'; });
+setInterval(async () => { await cleanupDuplicates(); loadPendingInvites(); loadActiveAdmins(); }, 30000);
 
-          document.getElementById('inviteLink').value = inviteLink;
-          document.getElementById('inviteResult').style.display = 'block';
-          document.getElementById('inviteMessage').innerHTML = '<span class="success">✓ Invite link created! Share this link with the new admin.</span>';
-          loadPendingInvites();
-          document.getElementById('inviteEmail').value = '';
-        }
-      });
-    }
-
-    const copyBtn = document.getElementById('copyLinkBtn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        const linkInput = document.getElementById('inviteLink');
-        linkInput.select();
-        document.execCommand('copy');
-        document.getElementById('inviteMessage').innerHTML = '<span class="success">✓ Link copied to clipboard!</span>';
-      });
-    }
-
-    async function loadPendingInvites() {
-      const { data, error } = await sb
-        .from('admin_invites')
-        .select('*')
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading invites:', error);
-        return;
-      }
-
-      const container = document.getElementById('pendingInvites');
-      if (!data || data.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No pending invites</p></div>';
-        return;
-      }
-
-      container.innerHTML = data.map(invite => `
-        <div class="invite-item">
-          <div class="invite-info">
-            <div class="invite-email">${escapeHtml(invite.email)}</div>
-            <div class="invite-expiry">Expires: ${new Date(invite.expires_at).toLocaleDateString()}</div>
-          </div>
-          <span class="invite-status status-pending">Pending</span>
-        </div>
-      `).join('');
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    function generateToken() {
-      return Math.random().toString(36).substring(2, 15) +
-             Math.random().toString(36).substring(2, 15);
-    }
-
-    checkAuth();
-    subscribeToInvites();
+init();
 </script>
 </body>
 </html>

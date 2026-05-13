@@ -7,207 +7,188 @@
   <link rel="stylesheet" href="/css/offices.css" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="/js/supabase_client.js" defer></script>
-<script src="/js/offices.js" defer></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase_client.js" defer></script>
+  <script src="/js/offices.js" defer></script>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════
+     AUTH & ROLE CHECK - Added to restrict viewers
+══════════════════════════════════════════════════ -->
 <script>
   // Check if user is logged in
   if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
-    // Redirect to login page
     window.location.href = '../index.html';
   }
+
+  // Role-based restriction for viewers
+  (async function() {
+    const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+    const sb = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+    const userRole = adminData?.role || 'viewer';
+
+    // Store role for use in other scripts
+    sessionStorage.setItem('userRole', userRole);
+
+    // If viewer, disable editing capabilities
+    if (userRole === 'viewer') {
+      document.addEventListener('DOMContentLoaded', () => {
+        // Hide the "Add Office" button
+        const addBtn = document.querySelector('button[onclick="addNewOffice()"]');
+        if (addBtn) addBtn.style.display = 'none';
+
+        // Disable edit and delete buttons (handled in JS)
+        // Show viewer banner
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background: #fef3c7; color: #92400e; padding: 8px 16px; text-align: center; font-size: 13px; border-bottom: 1px solid #fed7aa; position: sticky; top: 0; z-index: 1000;';
+        banner.innerHTML = '<i class="fas fa-eye"></i> Viewer Mode — You can view offices but cannot add, edit, or delete';
+        document.body.insertBefore(banner, document.body.firstChild);
+      });
+    }
+  })();
 </script>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
-      <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/images/bagong_pilipinas_logo.png" alt="Logo 1" class="logo-img" />
+    <img src="/images/luisiana_logo.png" alt="Logo 2" class="logo-img" />
+  </div>
+  <div class="sidebar-brand">
+    <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
+    <p class="sub-title">Client Satisfaction Survey</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item">
+      <i class="fas fa-house"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="offices.html" class="nav-item active">
+      <i class="fas fa-building"></i>
+      <span>Office</span>
+    </a>
+    <a href="survey_question.html" class="nav-item">
+      <i class="fas fa-list-ul"></i>
+      <span>Survey Question</span>
+    </a>
+    <a href="responses.html" class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Responses</span>
+    </a>
+    <a href="qr_code.html" class="nav-item">
+      <i class="fas fa-qrcode"></i>
+      <span>QR Code</span>
+    </a>
+    <a href="admin_invite.html" class="nav-item">
+      <i class="fas fa-user-plus"></i>
+      <span>Invite Admin</span>
+    </a>
+    <a href="#" id="logoutBtn" class="nav-item nav-logout">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="content-wrapper" style="padding: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
+      <div>
+        <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text-dark);">Offices</h1>
+        <p style="color: var(--text-light); margin-top: 4px;">Manage municipal offices and departments</p>
+      </div>
+
+      <button onclick="addNewOffice()" id="addOfficeBtn"
+              style="background: var(--accent-blue); color: white; border: none; padding: 12px 24px; border-radius: 10px;
+                     font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer;
+                     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
+        <i class="fas fa-plus"></i>
+        Add Office
+      </button>
     </div>
-    <div class="sidebar-brand">
-      <p class="municipal-name">MUNICIPALITY OF LUISIANA</p>
-      <p class="sub-title">Client Satisfaction Survey</p>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-item">
-        <i class="fas fa-house"></i>
-        <span>Dashboard</span>
-      </a>
-      <a href="offices.html" class="nav-item active">
+
+    <!-- Table Container -->
+    <div style="background: white; border-radius: var(--table-radius); box-shadow: var(--shadow-soft); overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f8fafc; border-bottom: 1px solid #e8eaf0;">
+            <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: var(--text-mid);">Photo</th>
+            <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: var(--text-mid);">Office Name</th>
+            <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: var(--text-mid);">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="officesTable">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state">
         <i class="fas fa-building"></i>
-        <span>Office</span>
-      </a>
-      <a href="survey_question.html" class="nav-item">
-        <i class="fas fa-list-ul"></i>
-        <span>Survey Question</span>
-      </a>
-      <a href="responses.html" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span>Responses</span>
-      </a>
-      <a href="qr_code.html" class="nav-item">
-        <i class="fas fa-qrcode"></i>
-        <span>QR Code</span>
-      </a>
-
-      <a href="#" id="logoutBtn" class="nav-item nav-logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
-      </a>
-    </nav>
-  </aside>
-
-  <main class="main">
-    <!--
-    <header class="topbar">
-      <div class="topbar-right">
-        <button class="icon-btn notif-btn">
-          <i class="far fa-bell"></i>
-          <span class="badge">3</span>
-        </button>
-        <div class="avatar-wrap">
-          <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
-        </div>
+        <h3 style="margin: 12px 0 8px; color: var(--text-mid);">No offices added yet</h3>
+        <p style="margin-bottom: 20px;">Click "Add Office" to get started</p>
       </div>
-    </header>-->
-
-    <div class="content-wrapper" style="padding: 32px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
-        <div>
-          <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text-dark);">Offices</h1>
-          <p style="color: var(--text-light); margin-top: 4px;">Manage municipal offices and departments</p>
-        </div>
-
-        <button onclick="addNewOffice()"
-                style="background: var(--accent-blue); color: white; border: none; padding: 12px 24px; border-radius: 10px;
-                       font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer;
-                       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
-          <i class="fas fa-plus"></i>
-          Add Office
-        </button>
-      </div>
-
-      <!-- Table Container -->
-      <div style="background: white; border-radius: var(--table-radius); box-shadow: var(--shadow-soft); overflow: hidden;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: #f8fafc; border-bottom: 1px solid #e8eaf0;">
-              <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: var(--text-mid);">Photo</th>
-              <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: var(--text-mid);">Office Name</th>
-              <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: var(--text-mid);">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="officesTable">
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state">
-          <i class="fas fa-building"></i>
-          <h3 style="margin: 12px 0 8px; color: var(--text-mid);">No offices added yet</h3>
-          <p style="margin-bottom: 20px;">Click "Add Office" to get started</p>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Improved Modal -->
-  <div id="officeModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modalTitle">Add New Office</h2>
-        <button class="close-btn" onclick="closeModal()">×</button>
-      </div>
-
-      <form id="officeForm" onsubmit="saveOffice(event)">
-        <div class="form-group">
-  <label>Office Photo</label>
-
-  <!-- Hidden real file input -->
-  <input type="file" id="officePhoto" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
-
-  <!-- Photo Editor Area -->
-  <div id="photoEditorWrap" style="display:none; flex-direction:column; align-items:center; gap:12px; margin-top:6px;">
-
-    <!-- Crop Preview Circle -->
-    <div id="cropFrame" style="
-      width: 140px; height: 140px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 2px dashed #3b82f6;
-      position: relative;
-      cursor: grab;
-      background: #f1f5f9;
-      user-select: none;
-    ">
-      <img id="photoPreview" src="" alt="Preview" style="
-        position: absolute;
-        transform-origin: 0 0;
-        pointer-events: none;
-        max-width: none;
-      ">
-    </div>
-
-    <!-- Zoom Slider -->
-    <div style="width:100%; display:flex; align-items:center; gap:10px;">
-      <i class="fas fa-magnifying-glass-minus" style="color:#94a3b8; font-size:0.85rem;"></i>
-      <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1"
-        style="flex:1; accent-color:#3b82f6; cursor:pointer;"
-        oninput="applyTransform()">
-      <i class="fas fa-magnifying-glass-plus" style="color:#94a3b8; font-size:0.85rem;"></i>
-    </div>
-
-    <!-- Change Photo / Reset buttons -->
-    <div style="display:flex; gap:8px;">
-      <button type="button" onclick="document.getElementById('officePhoto').click()"
-        style="font-size:0.8rem; padding:6px 14px; border-radius:8px; border:1px solid #e2e8f0;
-               background:#f8fafc; color:#555a72; cursor:pointer; font-weight:500;">
-        <i class="fas fa-image"></i> Change Photo
-      </button>
-      <button type="button" onclick="resetPhotoEditor()"
-        style="font-size:0.8rem; padding:6px 14px; border-radius:8px; border:1px solid #fecaca;
-               background:#fff5f5; color:#ef4444; cursor:pointer; font-weight:500;">
-        <i class="fas fa-xmark"></i> Remove
-      </button>
     </div>
   </div>
+</main>
 
-  <!-- Upload trigger (shown when no photo) -->
-  <div id="photoUploadTrigger"
-    onclick="document.getElementById('officePhoto').click()"
-    style="
-      border: 2px dashed #e2e8f0;
-      border-radius: 12px;
-      padding: 28px;
-      text-align: center;
-      cursor: pointer;
-      color: #94a3b8;
-      transition: border-color 0.2s, background 0.2s;
-    "
-    onmouseenter="this.style.borderColor='#3b82f6'; this.style.background='#eff6ff';"
-    onmouseleave="this.style.borderColor='#e2e8f0'; this.style.background='transparent';">
-    <i class="fas fa-cloud-arrow-up" style="font-size:1.8rem; margin-bottom:8px; display:block;"></i>
-    <span style="font-size:0.88rem;">Click to upload photo</span>
+<!-- Improved Modal -->
+<div id="officeModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add New Office</h2>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+
+    <form id="officeForm" onsubmit="saveOffice(event)">
+      <div class="form-group">
+        <label>Office Photo</label>
+        <input type="file" id="officePhoto" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
+
+        <div id="photoEditorWrap" style="display:none; flex-direction:column; align-items:center; gap:12px; margin-top:6px;">
+          <div id="cropFrame" style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 2px dashed #3b82f6; position: relative; cursor: grab; background: #f1f5f9; user-select: none;">
+            <img id="photoPreview" src="" alt="Preview" style="position: absolute; transform-origin: 0 0; pointer-events: none; max-width: none;">
+          </div>
+          <div style="width:100%; display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-magnifying-glass-minus" style="color:#94a3b8; font-size:0.85rem;"></i>
+            <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1" style="flex:1; accent-color:#3b82f6; cursor:pointer;" oninput="applyTransform()">
+            <i class="fas fa-magnifying-glass-plus" style="color:#94a3b8; font-size:0.85rem;"></i>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" onclick="document.getElementById('officePhoto').click()" style="font-size:0.8rem; padding:6px 14px; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc; color:#555a72; cursor:pointer; font-weight:500;">
+              <i class="fas fa-image"></i> Change Photo
+            </button>
+            <button type="button" onclick="resetPhotoEditor()" style="font-size:0.8rem; padding:6px 14px; border-radius:8px; border:1px solid #fecaca; background:#fff5f5; color:#ef4444; cursor:pointer; font-weight:500;">
+              <i class="fas fa-xmark"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div id="photoUploadTrigger" onclick="document.getElementById('officePhoto').click()" style="border: 2px dashed #e2e8f0; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; color: #94a3b8; transition: border-color 0.2s, background 0.2s;" onmouseenter="this.style.borderColor='#3b82f6'; this.style.background='#eff6ff';" onmouseleave="this.style.borderColor='#e2e8f0'; this.style.background='transparent';">
+          <i class="fas fa-cloud-arrow-up" style="font-size:1.8rem; margin-bottom:8px; display:block;"></i>
+          <span style="font-size:0.88rem;">Click to upload photo</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Office Name <span style="color:red;">*</span></label>
+        <input type="text" id="officeName" required placeholder="e.g. Mayor's Office">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="save-btn">Save Office</button>
+      </div>
+    </form>
   </div>
 </div>
-
-        <div class="form-group">
-          <label>Office Name <span style="color:red;">*</span></label>
-          <input type="text" id="officeName" required placeholder="e.g. Mayor's Office">
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="save-btn">Save Office</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
 
 <script>
   // Logout functionality
@@ -218,6 +199,7 @@
       sessionStorage.removeItem('isAdminLoggedIn');
       sessionStorage.removeItem('adminEmail');
       sessionStorage.removeItem('loginTime');
+      sessionStorage.removeItem('userRole');
       window.location.href = '../index.html';
     });
   }

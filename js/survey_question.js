@@ -1,9 +1,89 @@
+// ============================================
+// ROLE CHECK - Add at the top of the file
+// ============================================
+let currentUserRole = null;
+
+async function checkUserRole() {
+  const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+  const sb = supabase.createClient(supabaseUrl, supabaseKey);
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return 'viewer';
+  const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+  return adminData?.role || 'viewer';
+}
+
+function showViewerModal() {
+  // Remove any existing viewer modal first
+  const existingModal = document.getElementById('viewerModal');
+  if (existingModal) existingModal.remove();
+
+  // Create modal element
+  const modal = document.createElement('div');
+  modal.id = 'viewerModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+  `;
+
+  modal.innerHTML = `
+    <div style="background: white; border-radius: 16px; padding: 24px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">Access Denied</h3>
+      <p style="font-size: 14px; color: #475569; margin-bottom: 24px; line-height: 1.5;">Viewers cannot make changes to survey questions. Please contact an administrator.</p>
+      <button id="closeViewerModalBtn" style="background: var(--accent-blue); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">OK</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Close modal function
+  const closeModal = () => {
+    modal.remove();
+  };
+
+  // Add click event to button
+  const closeBtn = modal.querySelector('#closeViewerModalBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
+  }
+
+  // Close when clicking outside the modal content
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+}
+
+function isViewer() {
+  if (currentUserRole === 'viewer') {
+    showViewerModal();
+    return true;
+  }
+  return false;
+}
+
+
+
 // survey_question.js
 // ✅ Direct Supabase integration — no Flask/Python backend required.
 // Requires: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 // and a supabase_client.js that exposes `window.supabaseClient`
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+
+        // Get user role
+    currentUserRole = await checkUserRole();
+
     // ==================== DOM ELEMENTS ====================
     const editBtn = document.getElementById('editToggleBtn');
     const addPageBtn = document.getElementById('addPageBtn');
@@ -714,6 +794,7 @@ function extractSurveyState() {
 
     // ==================== ADD NEW PAGE ====================
     function addNewPage(type) {
+    if (isViewer()) return;
     const existingPages = document.querySelectorAll('.sq-page-block');
     const pageNumber = existingPages.length + 1;
     const newPageId = `dynamic-page-${pageNumber}-${Date.now()}`;
@@ -1063,6 +1144,7 @@ function getCurrentOfficeId() {
 // Replace your existing saveSurvey function with this one:
 
 async function saveSurvey() {
+    if (isViewer()) return;
   const currentState = extractSurveyState();
   if (surveySnapshot !== null && currentState === surveySnapshot) {
     showToast('No changes to save.', '#6b7280');
@@ -1237,6 +1319,7 @@ async function saveSurvey() {
     }
 
     function enterEditMode() {
+    if (isViewer()) return;
     isEditMode = true;
     document.documentElement.classList.add('edit-mode');
     editBtn.style.display = 'none'; // ✅ Hide EDIT button while editing
@@ -1310,6 +1393,7 @@ async function saveSurvey() {
     }
 
     function openAddPageModal() {
+        if (isViewer()) return;
         let modal = document.getElementById('addPageModal');
         if (!modal) {
             createAddPageModal();

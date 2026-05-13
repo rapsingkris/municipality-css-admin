@@ -1,4 +1,104 @@
-// offices.js
+// ============================================
+// 🔐 ROLE HIERARCHY SYSTEM
+// super_admin > admin > viewer
+// ============================================
+let currentUserRole = null;
+let currentUserId = null;
+
+const ROLE_RANK = {
+  super_admin: 3,
+  admin: 2,
+  viewer: 1
+};
+
+const ROLE_PERMISSIONS = {
+  super_admin: {
+    canEditOffices: true,
+    canDeleteOffices: true,
+    canAddOffices: true,
+    rank: 3
+  },
+  admin: {
+    canEditOffices: true,
+    canDeleteOffices: true,
+    canAddOffices: true,
+    rank: 2
+  },
+  viewer: {
+    canEditOffices: false,
+    canDeleteOffices: false,
+    canAddOffices: false,
+    rank: 1
+  }
+};
+
+async function checkUserRole() {
+  const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+  const sb = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return 'viewer';
+
+  currentUserId = session.user.id;
+
+  const { data: adminData } = await sb.from('admin_users').select('role').eq('id', session.user.id).single();
+  return adminData?.role || 'viewer';
+}
+
+function hasPermission(action) {
+  if (!currentUserRole) return false;
+  const permissions = ROLE_PERMISSIONS[currentUserRole];
+  return permissions && permissions[action] === true;
+}
+
+// Custom modal alert instead of browser alert
+function showAlert(message, type = 'warning') {
+  // Remove existing alert modal if any
+  const existingModal = document.getElementById('customAlertModal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'customAlertModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+
+  const icon = type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️';
+  const color = type === 'warning' ? 'var(--accent-blue)' : type === 'error' ? '#dc2626' : '#3b82f6';
+
+  modal.innerHTML = `
+    <div style="background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <div style="font-size: 48px; margin-bottom: 16px;">${icon}</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">Access Denied</h3>
+      <p style="font-size: 14px; color: #475569; margin-bottom: 24px; line-height: 1.5;">${message}</p>
+      <button onclick="this.closest('#customAlertModal').remove()" style="background: ${color}; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        OK
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Close on click outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+// ============================================
+// END OF ROLE CHECK
+// ============================================
+
 let editingId = null;
 
 // ── Photo Editor State ──────────────────────────────────────────
@@ -17,6 +117,11 @@ let photoState = {
 };
 
 function handlePhotoSelect(event) {
+  if (!hasPermission('canEditOffices')) {
+    showAlert('Viewers cannot edit office photos. Please contact an administrator.', 'warning');
+    return;
+  }
+
   const file = event.target.files[0];
   if (!file) return;
 
@@ -68,6 +173,7 @@ function resetPhotoEditor() {
 
 function initPhotoDrag() {
   const frame = document.getElementById('cropFrame');
+  if (!frame) return;
 
   frame.addEventListener('mousedown', (e) => {
     e.preventDefault();
@@ -133,6 +239,7 @@ function getCroppedBlob() {
 
 async function loadOffices() {
   const tbody = document.getElementById('officesTable');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   const { data, error } = await window.supabaseClient
@@ -142,7 +249,6 @@ async function loadOffices() {
 
   if (error) {
     console.error('Load error:', error);
-    alert('Failed to load offices: ' + error.message);
     return;
   }
 
@@ -161,14 +267,20 @@ function createTableRow(office) {
     ? `<img src="${office.photo_url}" alt="${office.name}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;background:#ffffff;display:block;">`
     : `<div style="width:50px;height:50px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:1.5rem;">📁</div>`;
 
-  row.innerHTML = `
+  const canEdit = hasPermission('canEditOffices');
+
+  const isViewer = !canEdit;
+const editDisabledAttr = isViewer ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '';
+const deleteDisabledAttr = isViewer ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '';
+
+row.innerHTML = `
     <td style="padding: 16px 20px;">${photoHtml}</td>
-    <td style="padding: 16px 20px; font-weight: 500;">${office.name}</td>
-    <td style="padding: 16px 20px; text-align: center;">
-      <button onclick="editOffice('${office.id}')" style="background:none;border:none;color:#3b82f6;margin-right:10px;">
+    <td style="padding: 16px 20px; font-weight: 500;">${escapeHtml(office.name)}</td>
+    <td style="padding: 16px 20px; text-align: center; white-space: nowrap;">
+      <button onclick="editOffice('${office.id}')" ${editDisabledAttr} class="action-btn edit-btn" style="display: inline-flex; margin: 0 4px;">
         <i class="fas fa-edit"></i>
       </button>
-      <button onclick="deleteOffice('${office.id}')" style="background:none;border:none;color:#ef4444;">
+      <button onclick="deleteOffice('${office.id}')" ${deleteDisabledAttr} class="action-btn delete-btn" style="display: inline-flex; margin: 0 4px;">
         <i class="fas fa-trash"></i>
       </button>
     </td>
@@ -176,7 +288,18 @@ function createTableRow(office) {
   return row;
 }
 
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function addNewOffice() {
+  if (!hasPermission('canAddOffices')) {
+    showAlert('Your account does not have permission to add offices. Only Super Admins and Admins can add offices.', 'warning');
+    return;
+  }
+
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add New Office';
   document.getElementById('officeForm').reset();
@@ -187,8 +310,16 @@ function addNewOffice() {
 async function saveOffice(e) {
   e.preventDefault();
 
+  if (!hasPermission('canAddOffices') && !hasPermission('canEditOffices')) {
+    showAlert('Your account does not have permission to save offices.', 'warning');
+    return;
+  }
+
   const name = document.getElementById('officeName').value.trim();
-  if (!name) return alert("Office name is required!");
+  if (!name) {
+    showAlert('Office name is required!', 'warning');
+    return;
+  }
 
   let photo_url = photoState.existingUrl || null;
 
@@ -203,7 +334,7 @@ async function saveOffice(e) {
 
     if (uploadError) {
       console.error(uploadError);
-      alert('Photo upload failed: ' + uploadError.message);
+      showAlert('Photo upload failed: ' + uploadError.message, 'error');
       return;
     }
 
@@ -224,7 +355,7 @@ async function saveOffice(e) {
 
   if (result.error) {
     console.error(result.error);
-    alert('Save failed: ' + result.error.message);
+    showAlert('Save failed: ' + result.error.message, 'error');
   } else {
     closeModal();
     loadOffices();
@@ -232,6 +363,11 @@ async function saveOffice(e) {
 }
 
 async function editOffice(id) {
+  if (!hasPermission('canEditOffices')) {
+    showAlert('Your account does not have permission to edit offices. Only Super Admins and Admins can edit offices.', 'warning');
+    return;
+  }
+
   editingId = id;
   resetPhotoEditor();
 
@@ -241,11 +377,13 @@ async function editOffice(id) {
     .eq('id', id)
     .single();
 
-  if (error || !data) return alert('Failed to load office');
+  if (error || !data) {
+    showAlert('Failed to load office', 'error');
+    return;
+  }
 
   document.getElementById('modalTitle').textContent = 'Edit Office';
   document.getElementById('officeName').value = data.name || '';
-
 
   if (data.photo_url) {
     const img = document.getElementById('photoPreview');
@@ -281,15 +419,61 @@ async function editOffice(id) {
 }
 
 async function deleteOffice(id) {
-  if (!confirm('Delete this office?')) return;
+  if (!hasPermission('canDeleteOffices')) {
+    showAlert('Your account does not have permission to delete offices. Only Super Admins and Admins can delete offices.', 'warning');
+    return;
+  }
 
-  const { error } = await window.supabaseClient
-    .from('offices')
-    .delete()
-    .eq('id', id);
+  // Create custom confirm modal
+  const confirmModal = document.createElement('div');
+  confirmModal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+  `;
 
-  if (error) alert('Delete failed');
-  else loadOffices();
+  confirmModal.innerHTML = `
+    <div style="background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">Confirm Delete</h3>
+      <p style="font-size: 14px; color: #475569; margin-bottom: 24px; line-height: 1.5;">Are you sure you want to delete this office? This action cannot be undone.</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button id="confirmDeleteBtn" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">Delete</button>
+        <button id="cancelDeleteBtn" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(confirmModal);
+
+  document.getElementById('confirmDeleteBtn').onclick = async () => {
+    confirmModal.remove();
+    const { error } = await window.supabaseClient
+      .from('offices')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      showAlert('Delete failed: ' + error.message, 'error');
+    } else {
+      loadOffices();
+    }
+  };
+
+  document.getElementById('cancelDeleteBtn').onclick = () => {
+    confirmModal.remove();
+  };
+
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) confirmModal.remove();
+  });
 }
 
 function closeModal() {
@@ -299,15 +483,26 @@ function closeModal() {
 
 function updateEmptyState() {
   const tbody = document.getElementById('officesTable');
-  document.getElementById('emptyState').style.display =
-    (tbody.children.length === 0) ? 'block' : 'none';
+  const emptyState = document.getElementById('emptyState');
+  if (emptyState) {
+    emptyState.style.display = (tbody.children.length === 0) ? 'block' : 'none';
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadOffices();
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  // First, check user role
+  currentUserRole = await checkUserRole();
+  console.log('User role:', currentUserRole);
+
+  // Load offices
+  await loadOffices();
   initPhotoDrag();
 
-  document.getElementById('officeModal').addEventListener('click', (e) => {
-    if (e.target.id === 'officeModal') closeModal();
-  });
+  const modal = document.getElementById('officeModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target.id === 'officeModal') closeModal();
+    });
+  }
 });
