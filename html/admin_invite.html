@@ -733,7 +733,10 @@ async function loadPendingInvites() {
         <td><span class="role-chip chip-${inv.role || 'admin'}">${ROLE_LABELS[inv.role] || 'Admin'}</span></td>
         <td style="font-size:0.8rem;">${new Date(inv.expires_at).toLocaleDateString()}</td>
         <td><span class="role-chip chip-pending">Pending</span></td>
-        <td><button class="btn-copy-invite" data-link="${esc(inviteLink)}" data-email="${esc(inv.email)}"><i class="fas fa-copy"></i> Copy Link</button></td>
+        <td>
+          <button class="btn-copy-invite" data-link="${esc(inviteLink)}" data-email="${esc(inv.email)}"><i class="fas fa-copy"></i> Copy</button>
+          <button class="btn-delete-invite" data-id="${inv.id}" data-email="${esc(inv.email)}" style="background:#dc2626; color:white; padding:0.3rem 0.7rem; border:none; border-radius:6px; cursor:pointer; font-size:0.7rem; margin-left:5px;"><i class="fas fa-trash"></i> Delete</button>
+        </td>
       </tr>
     `;
   }).join('')}</tbody></table>`;
@@ -745,6 +748,15 @@ async function loadPendingInvites() {
       const email = btn.dataset.email;
       await navigator.clipboard.writeText(link);
       toast(`Invite link copied for ${email}!`);
+    });
+  });
+
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.btn-delete-invite').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inviteId = btn.dataset.id;
+      const email = btn.dataset.email;
+      deletePendingInvite(inviteId, email);
     });
   });
 }
@@ -791,9 +803,15 @@ document.getElementById('kickModalConfirm').addEventListener('click', async () =
   const { id, email } = pendingKick;
   closeModal('kickModal');
   if (id === currentUser.id) { toast('You cannot remove yourself.', 'error'); return; }
+
   const { error } = await sb.from('admin_users').delete().eq('id', id);
-  if (error) toast('Error: ' + error.message, 'error');
-  else toast(`🗑️ ${email} has been removed.`);
+  if (error) {
+    toast('Error: ' + error.message, 'error');
+  } else {
+    // Also delete any pending invites for this email
+    await sb.from('admin_invites').delete().eq('email', email);
+    toast(`🗑️ ${email} has been removed.`);
+  }
   loadActiveAdmins();
   loadPendingInvites();
   await cleanupDuplicates();
@@ -801,6 +819,55 @@ document.getElementById('kickModalConfirm').addEventListener('click', async () =
 });
 
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+// Delete pending invite
+async function deletePendingInvite(inviteId, email) {
+  const confirmModal = document.createElement('div');
+  confirmModal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+  `;
+
+  confirmModal.innerHTML = `
+    <div style="background: white; border-radius: 16px; padding: 24px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">Delete Invite?</h3>
+      <p style="font-size: 14px; color: #475569; margin-bottom: 24px; line-height: 1.5;">Are you sure you want to delete the invite for <strong>${esc(email)}</strong>? This action cannot be undone.</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button id="confirmDeleteInviteBtn" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">Delete</button>
+        <button id="cancelDeleteInviteBtn" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(confirmModal);
+
+  document.getElementById('confirmDeleteInviteBtn').onclick = async () => {
+    confirmModal.remove();
+    const { error } = await sb.from('admin_invites').delete().eq('id', inviteId);
+    if (error) {
+      toast('Error deleting invite: ' + error.message, 'error');
+    } else {
+      toast(`Invite for ${email} deleted!`, 'success');
+      loadPendingInvites();
+    }
+  };
+
+  document.getElementById('cancelDeleteInviteBtn').onclick = () => {
+    confirmModal.remove();
+  };
+
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) confirmModal.remove();
+  });
+}
 document.getElementById('roleModalCancel').addEventListener('click', () => closeModal('roleModal'));
 document.getElementById('kickModalCancel').addEventListener('click', () => closeModal('kickModal'));
 document.getElementById('roleModal').addEventListener('click', e => { if (e.target === document.getElementById('roleModal')) closeModal('roleModal'); });
