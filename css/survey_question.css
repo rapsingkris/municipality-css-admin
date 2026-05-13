@@ -456,3 +456,17 @@
 .scale-option:hover img {
     transform: scale(1.05);
 }
+
+
+/* Use class instead of ID */
+.nav-logout {
+  margin-top: auto;
+  margin-bottom: 24px;
+  border-top: 1px solid var(--sidebar-border);
+  padding-top: 16px;
+}
+
+.nav-logout:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}

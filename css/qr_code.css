@@ -44,7 +44,7 @@
 }
 
 .qr-panel h2 i {
-    color: var(--accent-blue);
+    color: #2563eb;
 }
 
 /* Form Elements */
@@ -186,7 +186,7 @@
     transform: translateY(-1px);
 }
 
-.btn-print, .btn-download {
+.btn-print-poster, .btn-download {
     flex: 1;
     padding: 0.6rem 1rem;
     border-radius: 8px;
@@ -200,13 +200,13 @@
     transition: all 0.2s;
 }
 
-.btn-print {
+.btn-print-poster {
     background: #10b981;
     color: white;
     border: none;
 }
 
-.btn-print:hover {
+.btn-print-poster:hover {
     background: #059669;
 }
 
@@ -220,196 +220,9 @@
     background: #2563eb;
 }
 
-/* Templates Section */
-.templates-section {
-    background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-    border: 1px solid #e5e7eb;
-}
-
-.templates-section h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.templates-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.template-card {
-    background: #f9fafb;
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    transition: all 0.2s;
-    border: 1px solid #e5e7eb;
-}
-
-.template-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.template-preview {
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border: 1px solid #e5e7eb;
-}
-
-.poster-preview {
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.poster-preview h4 {
-    font-size: 0.85rem;
-    margin: 0.5rem 0 0.25rem;
-}
-
-.poster-preview p {
-    font-size: 0.7rem;
-    color: #6b7280;
-}
-
-.sticker-preview {
-    padding: 0.75rem;
-    text-align: center;
-}
-
-.multiple-preview {
-    padding: 0.75rem;
-}
-
-.multiple-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.mini-qr {
-    background: #e5e7eb;
-    aspect-ratio: 1;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: #9ca3af;
-}
-
-.mini-qr::before {
-    content: "\f029";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 400;
-}
-
-.template-qr-placeholder i {
-    font-size: 2.5rem;
-    color: #2563eb;
-}
-
-.template-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0.5rem 0 0.25rem;
-}
-
-.template-card p {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-bottom: 0.75rem;
-}
-
-.btn-template {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.btn-template:hover {
-    background: #1d4ed8;
-}
-
-/* Print Poster Template */
-.print-poster {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-    text-align: center;
-    font-family: 'DM Sans', system-ui, sans-serif;
-}
-
-.print-logos {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 1.5rem;
-}
-
-.print-logos img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-}
-
-.print-poster h2 {
-    font-size: 1.8rem;
-    margin: 0.5rem 0;
-    color: #1e3c72;
-}
-
-.print-poster h3 {
-    font-size: 1.2rem;
-    color: #2563eb;
-    margin-bottom: 1.5rem;
-}
-
-#printQRCode {
-    display: flex;
-    justify-content: center;
-    margin: 1.5rem 0;
-}
-
-.print-instruction {
-    font-size: 1rem;
-    font-weight: 500;
-    margin-top: 1rem;
-}
-
-.print-url {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-top: 0.5rem;
-}
-
-.print-footer {
-    margin-top: 2rem;
-    font-size: 0.8rem;
-    color: #9ca3af;
-}
-
 /* Print Styles */
 @media print {
-    .sidebar, .topbar, .action-buttons, .templates-section, .btn-generate, .qr-panel:first-child {
+    .sidebar, .topbar, .action-buttons, .btn-generate, .qr-panel:first-child {
         display: none;
     }
 
@@ -426,10 +239,6 @@
     .qr-display-panel {
         margin: 0 auto;
         text-align: center;
-    }
-
-    .action-buttons {
-        display: none;
     }
 
     body, .main, .dashboard-body {

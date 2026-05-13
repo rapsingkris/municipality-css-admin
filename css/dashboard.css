@@ -478,3 +478,19 @@ body {
   .topbar { padding: 0 18px; }
   .table-section { padding: 18px 12px 10px 12px; }
 }
+
+
+
+
+/* Use class instead of ID */
+.nav-logout {
+  margin-top: auto;
+  margin-bottom: 24px;
+  border-top: 1px solid var(--sidebar-border);
+  padding-top: 16px;
+}
+
+.nav-logout:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}

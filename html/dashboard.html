@@ -12,6 +12,13 @@
 <script src="/js/dashboard.js" defer></script>
 </head>
 <body>
+<script>
+  // Check if user is logged in
+  if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+    // Redirect to login page
+    window.location.href = '../index.html';
+  }
+</script>
 
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -24,7 +31,7 @@
       <p class="sub-title">Client Satisfaction Survey</p>
     </div>
     <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-item active">
+      <a href="dashboard.html" class="nav-item  active">
         <i class="fas fa-house"></i>
         <span>Dashboard</span>
       </a>
@@ -40,13 +47,27 @@
         <i class="fas fa-user"></i>
         <span>Responses</span>
       </a>
+      <a href="qr_code.html" class="nav-item">
+        <i class="fas fa-qrcode"></i>
+        <span>QR Codes</span>
+      </a>
+
+      <a href="admin_invite.html" class="nav-item">
+        <i class="fas fa-user-plus"></i>
+        <span>Invite Admin</span>
+      </a>
+
+      <a href="#" id="logoutBtn" class="nav-item nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
     </nav>
   </aside>
 
   <!-- Main Content -->
   <main class="main">
 
-    <!-- Topbar -->
+    <!-- Topbar
     <header class="topbar">
       <div class="topbar-right">
         <button class="icon-btn notif-btn">
@@ -57,7 +78,7 @@
           <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
         </div>
       </div>
-    </header>
+    </header>-->
 
     <!-- Dashboard Body -->
     <section class="dashboard-body">
@@ -140,6 +161,20 @@
       </div>
     </section>
   </main>
+
+<script>
+  // Logout functionality
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      sessionStorage.removeItem('isAdminLoggedIn');
+      sessionStorage.removeItem('adminEmail');
+      sessionStorage.removeItem('loginTime');
+      window.location.href = '../index.html';
+    });
+  }
+</script>
 
 </body>
 </html>

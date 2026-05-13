@@ -15,6 +15,13 @@
 
 </head>
 <body>
+<script>
+  // Check if user is logged in
+  if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+    // Redirect to login page
+    window.location.href = '../index.html';
+  }
+</script>
 
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -42,6 +49,10 @@
       <a href="responses.html" class="nav-item active">
         <i class="fas fa-user"></i>
         <span>Responses</span>
+      </a>
+      <a href="qr_code.html" class="nav-item">
+        <i class="fas fa-qrcode"></i>
+        <span>QR Codes</span>
       </a>
     </nav>
   </aside>
@@ -73,6 +84,7 @@
   <!-- Main Content -->
   <main class="main">
 
+    <!-- Topbar
     <header class="topbar">
       <div class="topbar-right">
         <button class="icon-btn notif-btn">
@@ -83,7 +95,7 @@
           <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
         </div>
       </div>
-    </header>
+    </header>-->
 
     <!-- Page Body -->
        <!-- Page Body -->

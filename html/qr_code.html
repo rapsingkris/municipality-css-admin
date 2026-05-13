@@ -10,10 +10,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="/js/supabase_client.js" defer></script>
   <script src="/js/qr_code.js" defer></script>
 </head>
 <body>
+<script>
+  // Check if user is logged in
+  if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+    // Redirect to login page
+    window.location.href = '../index.html';
+  }
+</script>
 
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -52,7 +58,7 @@
   <!-- Main Content -->
   <main class="main">
 
-    <!-- Topbar -->
+    <!-- Topbar
     <header class="topbar">
       <div class="topbar-right">
         <button class="icon-btn notif-btn">
@@ -63,13 +69,12 @@
           <img src="https://i.pravatar.cc/80?img=47" alt="Admin" class="avatar" />
         </div>
       </div>
-    </header>
+    </header>-->
 
     <!-- Dashboard Body -->
     <section class="dashboard-body">
       <div class="qr-header">
         <h1 class="page-title">QR Code Generator</h1>
-        <p class="qr-subtitle">Generate and print QR codes for your survey</p>
       </div>
 
       <!-- Two Column Layout -->
@@ -77,7 +82,7 @@
 
         <!-- Left Panel - Generate QR -->
         <div class="qr-panel qr-generate-panel">
-          <h2><i class="fas fa-qrcode"></i> Generate QR Code</h2>
+          <h2><i class="fas fa-qrcode"></i> Customize QR Code</h2>
 
           <div class="form-group">
             <label for="qrUrl">Survey URL</label>
@@ -107,9 +112,6 @@
             </div>
           </div>
 
-          <button id="generateBtn" class="btn-generate">
-            <i class="fas fa-sync-alt"></i> Generate QR Code
-          </button>
         </div>
 
         <!-- Right Panel - Display QR -->
@@ -125,90 +127,18 @@
           </div>
 
           <div class="action-buttons">
-            <button id="printBtn" class="btn-print">
+            <button id="printPosterBtn" class="btn-print-poster">
               <i class="fas fa-print"></i> Print QR Code
             </button>
             <button id="downloadBtn" class="btn-download">
-              <i class="fas fa-download"></i> Download as PNG
+              <i class="fas fa-download"></i> Download QR as PNG
             </button>
           </div>
-        </div>
-      </div>
-
-      <!-- Print Templates Section -->
-      <div class="templates-section">
-        <h2><i class="fas fa-copy"></i> Print Templates</h2>
-        <div class="templates-grid">
-
-          <!-- Template 1: Poster Size -->
-          <div class="template-card" data-template="poster">
-            <div class="template-preview poster-preview">
-              <div class="template-qr-placeholder">
-                <i class="fas fa-qrcode"></i>
-              </div>
-              <div class="template-content">
-                <h4>Client Satisfaction Survey</h4>
-                <p>Bayan ng Luisiana</p>
-              </div>
-            </div>
-            <h3>Poster Size</h3>
-            <p>8.5 x 11 inches - Perfect for bulletin boards</p>
-            <button class="btn-template" data-template="poster">
-              <i class="fas fa-print"></i> Print Poster
-            </button>
-          </div>
-
-          <!-- Template 2: Small Sticker -->
-          <div class="template-card" data-template="sticker">
-            <div class="template-preview sticker-preview">
-              <div class="template-qr-placeholder">
-                <i class="fas fa-qrcode"></i>
-              </div>
-            </div>
-            <h3>Sticker Size</h3>
-            <p>2 x 2 inches - For countertops</p>
-            <button class="btn-template" data-template="sticker">
-              <i class="fas fa-print"></i> Print Stickers
-            </button>
-          </div>
-
-          <!-- Template 3: Multiple per Page -->
-          <div class="template-card" data-template="multiple">
-            <div class="template-preview multiple-preview">
-              <div class="multiple-grid">
-                <div class="mini-qr"></div>
-                <div class="mini-qr"></div>
-                <div class="mini-qr"></div>
-                <div class="mini-qr"></div>
-              </div>
-            </div>
-            <h3>4 per Page</h3>
-            <p>Print 4 QR codes on one sheet</p>
-            <button class="btn-template" data-template="multiple">
-              <i class="fas fa-print"></i> Print Multiple
-            </button>
-          </template>
         </div>
       </div>
 
     </section>
   </main>
-
-  <!-- Hidden Print Template (for poster printing) -->
-  <div id="printTemplate" style="display: none;">
-    <div class="print-poster">
-      <div class="print-logos">
-        <img src="/images/bagong_pilipinas_logo.png" alt="Bagong Pilipinas">
-        <img src="/images/luisiana_logo.png" alt="Luisiana">
-      </div>
-      <h2>Municipality of Luisiana</h2>
-      <h3>Client Satisfaction Survey</h3>
-      <div id="printQRCode"></div>
-      <p class="print-instruction">Scan this QR code to take our survey</p>
-      <p class="print-url" id="printUrl"></p>
-      <p class="print-footer">Your feedback helps us serve you better</p>
-    </div>
-  </div>
 
 </body>
 </html>

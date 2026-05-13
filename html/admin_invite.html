@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invite Admin - Municipality of Luisiana</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase_client.js"></script>
+  <style>
+    .invite-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      background: #004aad;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+    }
+    button:hover {
+      background: #003380;
+    }
+    .invite-link-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f1f5f9;
+      border-radius: 8px;
+      display: none;
+    }
+    .invite-link-box input {
+      background: white;
+      font-family: monospace;
+    }
+    .success {
+      color: #10b981;
+      margin-top: 0.5rem;
+    }
+    .error {
+      color: #dc2626;
+      margin-top: 0.5rem;
+    }
+    .invites-list {
+      margin-top: 2rem;
+    }
+    .invite-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .invite-status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+    }
+    .status-used {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .status-pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .copy-btn {
+      background: #3b82f6;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      width: auto;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="invite-container">
+    <h2><i class="fas fa-user-plus"></i> Invite New Admin</h2>
+    <p>Send an invite link to add new administrators to the system.</p>
+
+    <form id="inviteForm">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="inviteEmail" required placeholder="admin@example.com">
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <select id="inviteRole">
+          <option value="admin">Admin</option>
+          <option value="viewer">Viewer (Read-only)</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+      </div>
+
+      <button type="submit">
+        <i class="fas fa-paper-plane"></i> Generate Invite Link
+      </button>
+    </form>
+
+    <div id="inviteResult" class="invite-link-box">
+      <label>Invite Link (share with new admin):</label>
+      <input type="text" id="inviteLink" readonly>
+      <button type="button" id="copyLinkBtn" class="copy-btn">
+        <i class="fas fa-copy"></i> Copy
+      </button>
+      <div id="inviteMessage"></div>
+    </div>
+
+    <div class="invites-list">
+      <h3>Pending Invites</h3>
+      <div id="pendingInvites"></div>
+    </div>
+  </div>
+
+<script>
+    // Initialize Supabase directly (no external dependency)
+    const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
+    const sb = supabase.createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+
+    // Check if user is logged in and is admin
+    async function checkAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      // Check if user is in admin_users
+      const { data: adminCheck } = await sb
+        .from('admin_users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!adminCheck) {
+        await sb.auth.signOut();
+        window.location.href = '../index.html';
+      }
+
+      currentUser = session.user;
+      loadPendingInvites();
+    }
+
+    // Generate invite link
+    const inviteForm = document.getElementById('inviteForm');
+    if (inviteForm) {
+      inviteForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('inviteEmail').value;
+        const role = document.getElementById('inviteRole').value;
+        const token = generateToken();
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        const { data, error } = await sb
+          .from('admin_invites')
+          .insert({
+            email: email,
+            token: token,
+            expires_at: expiresAt.toISOString(),
+            invited_by: currentUser.id
+          })
+          .select();
+
+        if (error) {
+          document.getElementById('inviteMessage').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+        } else {
+
+          // Use your production URL when available
+        const baseUrl = window.location.hostname === 'localhost'
+          ? 'http://localhost:63342'  // Change to your localhost port
+          : 'https://municipality-css-admin.vercel.app/'; // Change to your actual Vercel URL
+
+        const inviteLink = `${baseUrl}/html/register.html?token=${token}&email=${encodeURIComponent(email)}&role=${role}`;
+
+          document.getElementById('inviteLink').value = inviteLink;
+          document.getElementById('inviteResult').style.display = 'block';
+          document.getElementById('inviteMessage').innerHTML = '<span class="success">✓ Invite link created! Share this link with the new admin.</span>';
+          loadPendingInvites();
+          document.getElementById('inviteEmail').value = '';
+        }
+      });
+    }
+
+    // Copy link to clipboard
+    const copyBtn = document.getElementById('copyLinkBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const linkInput = document.getElementById('inviteLink');
+        linkInput.select();
+        document.execCommand('copy');
+        document.getElementById('inviteMessage').innerHTML = '<span class="success">✓ Link copied to clipboard!</span>';
+      });
+    }
+
+    // Load pending invites
+    async function loadPendingInvites() {
+      const { data, error } = await sb
+        .from('admin_invites')
+        .select('*')
+        .eq('used', false)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading invites:', error);
+        return;
+      }
+
+      const container = document.getElementById('pendingInvites');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color: #6b7280;">No pending invites</p>';
+        return;
+      }
+
+      container.innerHTML = data.map(invite => `
+        <div class="invite-item">
+          <div>
+            <strong>${invite.email}</strong>
+            <br>
+            <small>Expires: ${new Date(invite.expires_at).toLocaleDateString()}</small>
+          </div>
+          <span class="invite-status status-pending">Pending</span>
+        </div>
+      `).join('');
+    }
+
+    function generateToken() {
+      return Math.random().toString(36).substring(2, 15) +
+             Math.random().toString(36).substring(2, 15);
+    }
+
+    checkAuth();
+</script>
+</body>
+</html>
