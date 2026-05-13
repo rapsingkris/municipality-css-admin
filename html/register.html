@@ -156,10 +156,10 @@
     <div id="message"></div>
   </div>
 
-  <script>
+<script>
     const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     // Get token from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -219,7 +219,7 @@
 
       try {
         // Create user in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
           email: email,
           password: password,
           options: {
@@ -233,7 +233,7 @@
         if (authError) throw authError;
 
         // Add to admin_users table
-        const { error: adminError } = await supabase
+        const { error: adminError } = await supabaseClient
           .from('admin_users')
           .insert({
             id: authData.user.id,
@@ -246,7 +246,7 @@
         if (adminError) throw adminError;
 
         // Mark invite as used
-        await supabase
+        await supabaseClient
           .from('admin_invites')
           .update({ used: true })
           .eq('token', token);
@@ -264,6 +264,6 @@
         submitBtn.disabled = false;
       }
     });
-  </script>
+</script>
 </body>
 </html>
