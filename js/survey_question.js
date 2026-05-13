@@ -14,6 +14,53 @@ document.addEventListener('DOMContentLoaded', () => {
     let dynamicCardCounter = 0;
     let pendingDeleteCallback = null;
     let currentSurveyId = null;
+    let surveySnapshot = null; // tracks last-saved state
+
+// ==================== FIX extractSurveyState ====================
+function extractSurveyState() {
+    const pages = [];
+    document.querySelectorAll('.sq-page-block').forEach(page => {
+        const isMC      = !!page.querySelector('.multiple-choice-questions-container');
+        const isLikert  = !!page.querySelector('.likert-questions-container');
+        const isComment = !!page.querySelector('.comment-questions-container');
+        if (!isMC && !isLikert && !isComment) return;
+
+        const instruction = page.querySelector('.card-instruction')?.value.trim() || '';
+        const questions   = [];
+
+        if (isMC) {
+            page.querySelectorAll('.mc-question-item').forEach(q => {
+                const text       = q.querySelector('.mc-question-text')?.value.trim() || '';
+                const selectType = q.querySelector('.mc-select-type')?.value || 'radio';
+                const options    = [...q.querySelectorAll('.mc-option-item input[type="text"]')]
+                    .map(o => o.value.trim());
+                questions.push({
+                    question_text: text,     // ← CHANGED
+                    selectType,
+                    options
+                });
+            });
+            pages.push({ type: 'multiple-choice', instruction, questions });
+        }
+        else if (isLikert) {
+            page.querySelectorAll('.likert-question-item').forEach(q => {
+                questions.push({
+                    question_text: q.querySelector('.likert-question-text')?.value.trim() || ''
+                });
+            });
+            pages.push({ type: 'likert', instruction, questions });
+        }
+        else if (isComment) {
+            page.querySelectorAll('.comment-question-item').forEach(q => {
+                questions.push({
+                    question_text: q.querySelector('.comment-question-text')?.value.trim() || ''
+                });
+            });
+            pages.push({ type: 'comment', instruction, questions });
+        }
+    });
+    return JSON.stringify(pages);
+}
 
     // Static cards that should never be removed
     const staticCardIds = ['card1', 'card2'];
@@ -850,20 +897,188 @@ async function loadSurvey(surveyId) {
 
     updateStepNumbers();
     enableAllInputs(false);
+    setTimeout(() => { surveySnapshot = extractSurveyState(); }, 0);
 }
 
-    // ==================== SAVE SURVEY ====================
+// ==================== ADD THESE ARCHIVE FUNCTIONS TO survey_question.js ====================
+// Place these functions BEFORE the saveSurvey function
+
+
+
+
+
+// Main archive function
+// ==================== ARCHIVE OLD SURVEY QUESTIONS ====================
+// Place this BEFORE the saveSurvey() function
+
+// ==================== FULL ARCHIVE: Questions + Responses ====================
+// ==================== FULL ARCHIVE: Questions + ALL Survey Responses ====================
+async function archiveQuestionsWithResponsesIfNeeded(surveyId) {
+  try {
+    console.log(`🚀 Starting full archive for survey: ${surveyId}`);
+
+    // Get office_id from survey_responses
+    const { data: responseSample } = await db
+      .from('survey_responses')
+      .select('office_id')
+      .eq('survey_id', surveyId)
+      .limit(1);
+
+    let officeId = responseSample?.[0]?.office_id ||
+                  (typeof currentOfficeId !== 'undefined' ? currentOfficeId : getCurrentOfficeId());
+
+    console.log(`Office ID used: ${officeId}`);
+
+    // Count responses
+    const { count: totalResponses } = await db
+      .from('survey_responses')
+      .select('*', { count: 'exact', head: true })
+      .eq('survey_id', surveyId);
+
+    if (!totalResponses || totalResponses === 0) {
+      console.log('No responses to archive');
+      return false;
+    }
+
+    // === Combined Confirmation Modal ===
+    const confirmed = await new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:20000;backdrop-filter:blur(4px);`;
+
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;max-width:520px;width:90%;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:1.5rem;color:white;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <i class="fas fa-archive" style="font-size:1.8rem;"></i>
+              <h3 style="margin:0;">Archive Survey?</h3>
+            </div>
+          </div>
+          <div style="padding:1.75rem;">
+            <p><strong>This survey has ${totalResponses} existing response(s).</strong></p>
+            <p style="margin:12px 0 20px 0; color:#b45309;">
+              <strong>Warning:</strong> This will archive the current questions +
+              <strong>all responses</strong> (personal info, CC answers, Likert, MC, Comments),
+              then delete them from the active tables.
+            </p>
+            <div style="display:flex;justify-content:flex-end;gap:0.75rem;">
+              <button id="cancelArchiveBtn" style="background:#f3f4f6;border:none;padding:0.6rem 1.5rem;border-radius:10px;cursor:pointer;">Cancel</button>
+              <button id="confirmArchiveBtn" style="background:#10b981;border:none;padding:0.6rem 1.5rem;border-radius:10px;color:white;cursor:pointer;">Yes, Archive & Clean Up</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      overlay.querySelector('#cancelArchiveBtn').onclick = () => { overlay.remove(); resolve(false); };
+      overlay.querySelector('#confirmArchiveBtn').onclick = () => { overlay.remove(); resolve(true); };
+    });
+
+    if (!confirmed) {
+      console.log('❌ User cancelled archiving');
+      return null;
+    }
+
+    showToast('Creating full archive...', '#f59e0b');
+
+    // 1. Current survey questions + NORMALIZE question_text
+    let currentPages = JSON.parse(extractSurveyState());
+
+    // 🔥 FIX: Normalize to use consistent 'question_text' field
+    let pagesToArchive = currentPages.map(page => ({
+      ...page,
+      questions: (page.questions || []).map(q => ({
+        ...q,
+        question_text: q.question_text || q.text || ''
+      }))
+    }));
+
+    // 2. Get ALL response data
+    const { data: allResponses } = await db
+      .from('survey_responses')
+      .select('*')
+      .eq('survey_id', surveyId);
+
+    const responseIds = allResponses ? allResponses.map(r => r.id) : [];
+
+    // Fetch from the actual answer tables
+    const [likertRes, mcRes, commentRes] = await Promise.all([
+      responseIds.length ? db.from('likert_responses').select('*').in('response_id', responseIds) : {data: []},
+      responseIds.length ? db.from('mc_responses').select('*').in('response_id', responseIds) : {data: []},
+      responseIds.length ? db.from('comment_responses').select('*').in('response_id', responseIds) : {data: []},
+    ]);
+
+    // 3. Save comprehensive archive
+    const { error: archiveError } = await db.from('survey_archives').insert({
+      survey_id: surveyId,
+      office_id: officeId,
+      pages: pagesToArchive,                    // ← Now normalized
+      responses: {
+        survey_responses: allResponses || [],
+        likert_responses: likertRes.data || [],
+        mc_responses: mcRes.data || [],
+        comment_responses: commentRes.data || []
+      },
+      total_responses: totalResponses,
+      archived_responses_count: totalResponses
+    });
+
+    if (archiveError) throw archiveError;
+
+    console.log('✅ Full archive saved successfully');
+
+    // 4. Clean up active responses
+    await db.from('survey_responses').delete().eq('survey_id', surveyId);
+
+    await Promise.all([
+      db.from('likert_responses').delete().in('response_id', responseIds),
+      db.from('mc_responses').delete().in('response_id', responseIds),
+      db.from('comment_responses').delete().in('response_id', responseIds)
+    ]);
+
+    showToast(`Full archive created successfully! (${totalResponses} responses)`, '#10b981');
+    return true;
+
+  } catch (err) {
+    console.error('💥 Full archive error:', err);
+    showToast('Archive failed: ' + (err.message || err), '#ef4444');
+    return null;
+  }
+}
+
+function getCurrentOfficeId() {
+  if (typeof currentOfficeId !== 'undefined' && currentOfficeId) {
+    return currentOfficeId;
+  }
+  const stored = localStorage.getItem('currentOfficeId');
+  if (stored) return stored;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const officeParam = urlParams.get('office_id');
+  if (officeParam) return officeParam;
+
+  return document.body.dataset.officeId || null;
+}
+
+// ==================== UPDATE THE SAVE SURVEY FUNCTION ====================
+// Replace your existing saveSurvey function with this one:
+
 async function saveSurvey() {
+  const currentState = extractSurveyState();
+  if (surveySnapshot !== null && currentState === surveySnapshot) {
+    showToast('No changes to save.', '#6b7280');
+    exitEditMode();
+    return;
+  }
+
   const pageBlocks = document.querySelectorAll('.sq-page-block');
   let hasQuestions = false;
 
-  // Collect all page data from the DOM
   const mcPages = [], likertPages = [], commentPages = [];
   let pageOrder = 0;
 
   pageBlocks.forEach((page) => {
-    const isMC      = !!page.querySelector('.multiple-choice-questions-container');
-    const isLikert  = !!page.querySelector('.likert-questions-container');
+    const isMC = !!page.querySelector('.multiple-choice-questions-container');
+    const isLikert = !!page.querySelector('.likert-questions-container');
     const isComment = !!page.querySelector('.comment-questions-container');
     if (!isMC && !isLikert && !isComment) return;
 
@@ -882,7 +1097,6 @@ async function saveSurvey() {
         hasQuestions = true;
       });
       if (questions.length) mcPages.push({ order: pageOrder, instruction, questions });
-
     } else if (isLikert) {
       const questions = [];
       page.querySelectorAll('.likert-question-item').forEach((q, i) => {
@@ -892,7 +1106,6 @@ async function saveSurvey() {
         hasQuestions = true;
       });
       if (questions.length) likertPages.push({ order: pageOrder, instruction, questions });
-
     } else if (isComment) {
       const questions = [];
       page.querySelectorAll('.comment-question-item').forEach((q, i) => {
@@ -910,15 +1123,21 @@ async function saveSurvey() {
     return;
   }
 
+  // ⭐ CHECK FOR EXISTING RESPONSES AND ARCHIVE IF NEEDED ⭐
+  if (currentSurveyId) {
+    const hadResponses = await archiveQuestionsWithResponsesIfNeeded(currentSurveyId);
+    if (hadResponses === null) {
+      return; // User cancelled or error
+    }
+  }
+
   saveBtn.classList.add('saving');
   saveBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Saving...';
 
   try {
-    // 1. Upsert survey row
     let surveyId = currentSurveyId;
     if (surveyId) {
       await db.from('surveys').update({ updated_at: new Date().toISOString() }).eq('id', surveyId);
-      // Wipe existing pages (cascades to questions + options)
       await db.from('mc_pages').delete().eq('survey_id', surveyId);
       await db.from('likert_pages').delete().eq('survey_id', surveyId);
       await db.from('comment_pages').delete().eq('survey_id', surveyId);
@@ -928,57 +1147,51 @@ async function saveSurvey() {
       surveyId = data.id;
     }
 
-    // 2. Insert multiple-choice pages
+    // Save MC pages
     for (const p of mcPages) {
       const { data: pageRow, error: pErr } = await db.from('mc_pages')
         .insert({ survey_id: surveyId, page_order: p.order, instruction: p.instruction })
         .select().single();
       if (pErr) throw pErr;
-
       for (const q of p.questions) {
         const { data: qRow, error: qErr } = await db.from('mc_questions')
           .insert({ page_id: pageRow.id, question_order: q.order, question_text: q.text, select_type: q.selectType })
           .select().single();
         if (qErr) throw qErr;
-
         if (q.options.length) {
-          const { error: oErr } = await db.from('mc_options').insert(
+          await db.from('mc_options').insert(
             q.options.map((opt, idx) => ({ question_id: qRow.id, option_order: idx + 1, option_text: opt }))
           );
-          if (oErr) throw oErr;
         }
       }
     }
 
-    // 3. Insert likert pages
+    // Save Likert pages
     for (const p of likertPages) {
       const { data: pageRow, error: pErr } = await db.from('likert_pages')
         .insert({ survey_id: surveyId, page_order: p.order, instruction: p.instruction })
         .select().single();
       if (pErr) throw pErr;
-
       for (const q of p.questions) {
-        const { error: qErr } = await db.from('likert_questions')
+        await db.from('likert_questions')
           .insert({ page_id: pageRow.id, question_order: q.order, question_text: q.text, scale_points: 5 });
-        if (qErr) throw qErr;
       }
     }
 
-    // 4. Insert comment pages
+    // Save Comment pages
     for (const p of commentPages) {
       const { data: pageRow, error: pErr } = await db.from('comment_pages')
         .insert({ survey_id: surveyId, page_order: p.order, instruction: p.instruction })
         .select().single();
       if (pErr) throw pErr;
-
       for (const q of p.questions) {
-        const { error: qErr } = await db.from('comment_questions')
+        await db.from('comment_questions')
           .insert({ page_id: pageRow.id, question_order: q.order, question_text: q.text });
-        if (qErr) throw qErr;
       }
     }
 
     currentSurveyId = surveyId;
+    surveySnapshot = currentState;
     saveBtn.classList.remove('saving');
     saveBtn.classList.add('saved');
     saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
@@ -996,7 +1209,6 @@ async function saveSurvey() {
     showToast('Error saving: ' + err.message, '#ef4444');
   }
 }
-
     saveBtn.addEventListener('click', saveSurvey);
 
     // ==================== EDIT MODE CONFIRMATION ====================

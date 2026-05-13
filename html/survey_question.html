@@ -13,13 +13,6 @@
   <script src="/js/survey_question.js" defer></script>
 </head>
 <body>
-<script>
-  // Check if user is logged in
-  if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
-    // Redirect to login page
-    window.location.href = '../index.html';
-  }
-</script>
 
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -50,12 +43,7 @@
       </a>
       <a href="qr_code.html" class="nav-item">
         <i class="fas fa-qrcode"></i>
-        <span>QR Codes</span>
-      </a>
-
-      <a href="#" id="logoutBtn" class="nav-item nav-logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
+        <span>QR Code</span>
       </a>
     </nav>
   </aside>
@@ -245,21 +233,10 @@
 
     </section>
   </main>
-
-
-
-<script>
-  // Logout functionality
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      sessionStorage.removeItem('isAdminLoggedIn');
-      sessionStorage.removeItem('adminEmail');
-      sessionStorage.removeItem('loginTime');
-      window.location.href = '../index.html';
-    });
-  }
-</script>
 </body>
+<script>
+  // Set this when the page loads or when office is selected
+  window.currentOfficeId = null; // Will be set by responses.js
+  window.currentOfficeName = '';
+</script>
 </html>
