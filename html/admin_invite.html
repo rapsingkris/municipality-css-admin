@@ -8,100 +8,241 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/supabase_client.js"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #f3f5fa;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
     .invite-container {
-      max-width: 600px;
-      margin: 2rem auto;
+      max-width: 700px;
+      margin: 0 auto;
       padding: 2rem;
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
+
+    h2 {
+      font-size: 1.5rem;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
     .form-group {
       margin-bottom: 1.5rem;
     }
+
     label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
       color: #1e293b;
+      font-size: 0.85rem;
     }
+
     input, select {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.75rem 1rem;
       border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
     }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #004aad;
+      box-shadow: 0 0 0 3px rgba(0,74,173,0.1);
+    }
+
     button {
       background: #004aad;
       color: white;
       border: none;
       padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
       width: 100%;
+      font-size: 0.9rem;
+      transition: all 0.2s;
     }
+
     button:hover {
       background: #003380;
+      transform: translateY(-1px);
     }
+
     .invite-link-box {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       padding: 1rem;
       background: #f1f5f9;
-      border-radius: 8px;
+      border-radius: 12px;
       display: none;
     }
+
+    .invite-link-box label {
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .link-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
     .invite-link-box input {
+      flex: 1;
       background: white;
       font-family: monospace;
+      font-size: 0.8rem;
     }
+
+    .copy-btn {
+      width: auto;
+      padding: 0.6rem 1rem;
+      background: #3b82f6;
+      margin: 0;
+    }
+
+    .copy-btn:hover {
+      background: #2563ed;
+    }
+
     .success {
       color: #10b981;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
     }
+
     .error {
       color: #dc2626;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
     }
-    .invites-list {
+
+        .invites-list {
       margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
     }
+
+    .invites-list h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #1e293b;
+    }
+
+    .invites-list h3 i {
+      margin-right: 0.5rem;
+      color: #004aad;
+    }
+
     .invite-item {
-      padding: 0.75rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background 0.2s;
     }
+
+    .invite-item:last-child {
+      border-bottom: none;
+    }
+
+    .invite-item:hover {
+      background: #f8fafc;
+    }
+
+    .invite-info {
+      flex: 1;
+    }
+
+    .invite-email {
+      font-weight: 500;
+      color: #1e293b;
+      font-size: 0.85rem;
+    }
+
+    .invite-expiry {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 0.2rem;
+    }
+
     .invite-status {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 12px;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
     }
+
     .status-used {
-      background: #fee2e2;
-      color: #dc2626;
+      background: #dcfce7;
+      color: #15803d;
     }
+
     .status-pending {
       background: #fef3c7;
       color: #d97706;
     }
-    .copy-btn {
-      background: #3b82f6;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      width: auto;
-      margin-left: 0.5rem;
+
+    .empty-state {
+      padding: 2rem;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      .invite-container {
+        padding: 1.5rem;
+      }
+      .link-wrapper {
+        flex-direction: column;
+      }
+      .copy-btn {
+        width: 100%;
+      }
+      .invite-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .invite-status {
+        align-self: flex-start;
+      }
     }
   </style>
 </head>
 <body>
   <div class="invite-container">
     <h2><i class="fas fa-user-plus"></i> Invite New Admin</h2>
-    <p>Send an invite link to add new administrators to the system.</p>
+    <p class="subtitle">Send an invite link to add new administrators to the system.</p>
 
     <form id="inviteForm">
       <div class="form-group">
@@ -125,28 +266,28 @@
 
     <div id="inviteResult" class="invite-link-box">
       <label>Invite Link (share with new admin):</label>
-      <input type="text" id="inviteLink" readonly>
-      <button type="button" id="copyLinkBtn" class="copy-btn">
-        <i class="fas fa-copy"></i> Copy
-      </button>
+      <div class="link-wrapper">
+        <input type="text" id="inviteLink" readonly>
+        <button type="button" id="copyLinkBtn" class="copy-btn">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+      </div>
       <div id="inviteMessage"></div>
     </div>
 
     <div class="invites-list">
-      <h3>Pending Invites</h3>
+      <h3><i class="fas fa-clock"></i> Pending Invites</h3>
       <div id="pendingInvites"></div>
     </div>
   </div>
 
 <script>
-    // Initialize Supabase directly (no external dependency)
     const supabaseUrl = 'https://ircbidpdgkezxnszzeuu.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY2JpZHBkZ2tlenhuc3p6ZXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ1ODYsImV4cCI6MjA5MjIwMDU4Nn0.OkLuJsyIx1a3AsIb9w7KWEDlyIJfWjQJ9O_fN5KoSMw';
     const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentUser = null;
 
-    // Check if user is logged in and is admin
     async function checkAuth() {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) {
@@ -154,7 +295,6 @@
         return;
       }
 
-      // Check if user is in admin_users
       const { data: adminCheck } = await sb
         .from('admin_users')
         .select('*')
@@ -170,7 +310,16 @@
       loadPendingInvites();
     }
 
-    // Generate invite link
+    // Listen for real-time updates on invites
+    function subscribeToInvites() {
+      const channel = sb.channel('admin_invites_changes')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'admin_invites' },
+          () => loadPendingInvites()
+        )
+        .subscribe();
+    }
+
     const inviteForm = document.getElementById('inviteForm');
     if (inviteForm) {
       inviteForm.addEventListener('submit', async (e) => {
@@ -195,13 +344,11 @@
         if (error) {
           document.getElementById('inviteMessage').innerHTML = `<span class="error">Error: ${error.message}</span>`;
         } else {
+          const baseUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:5500'
+            : 'https://municipality-css-admin.vercel.app';
 
-          // Use your production URL when available
-        const baseUrl = window.location.hostname === 'localhost'
-          ? 'http://localhost:63342'  // Change to your localhost port
-          : 'https://municipality-css-admin.vercel.app/'; // Change to your actual Vercel URL
-
-        const inviteLink = `${baseUrl}/html/register.html?token=${token}&email=${encodeURIComponent(email)}&role=${role}`;
+          const inviteLink = `${baseUrl}/html/register.html?token=${token}&email=${encodeURIComponent(email)}&role=${role}`;
 
           document.getElementById('inviteLink').value = inviteLink;
           document.getElementById('inviteResult').style.display = 'block';
@@ -212,7 +359,6 @@
       });
     }
 
-    // Copy link to clipboard
     const copyBtn = document.getElementById('copyLinkBtn');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -223,7 +369,6 @@
       });
     }
 
-    // Load pending invites
     async function loadPendingInvites() {
       const { data, error } = await sb
         .from('admin_invites')
@@ -239,20 +384,25 @@
 
       const container = document.getElementById('pendingInvites');
       if (!data || data.length === 0) {
-        container.innerHTML = '<p style="color: #6b7280;">No pending invites</p>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No pending invites</p></div>';
         return;
       }
 
       container.innerHTML = data.map(invite => `
         <div class="invite-item">
-          <div>
-            <strong>${invite.email}</strong>
-            <br>
-            <small>Expires: ${new Date(invite.expires_at).toLocaleDateString()}</small>
+          <div class="invite-info">
+            <div class="invite-email">${escapeHtml(invite.email)}</div>
+            <div class="invite-expiry">Expires: ${new Date(invite.expires_at).toLocaleDateString()}</div>
           </div>
           <span class="invite-status status-pending">Pending</span>
         </div>
       `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function generateToken() {
@@ -261,6 +411,7 @@
     }
 
     checkAuth();
+    subscribeToInvites();
 </script>
 </body>
 </html>
